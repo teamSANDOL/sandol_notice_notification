@@ -1,0 +1,7 @@
+{
+  "verbose": true,
+  "ignore": ["*.test.js", "**/fixtures/**"],
+  "watch": "src/**/*.ts",
+  "delay": 1000,
+  "exec": "ts-node -r tsconfig-paths/register src/app.ts"
+}
