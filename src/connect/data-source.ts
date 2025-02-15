@@ -1,3 +1,4 @@
+import { join } from "path";
 import { DataSource } from "typeorm";
 
 export const dataSource = new DataSource({
@@ -8,8 +9,8 @@ export const dataSource = new DataSource({
   password: process.env.POSTGRES_PASSWORD,
   database: process.env.POSTGRES_DB,
   entities: ["./src/entity/*.entity.*"],
-  synchronize: false,
-  logging: ["error"],
+  synchronize: true,
+  logging: ["error", "query"],
   migrations: [],
   ssl: false,
   subscribers: [],
