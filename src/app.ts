@@ -1,3 +1,4 @@
+import { dataSource } from "@/connect/data-source";
 import indexRouter from "@/router";
 import dotenv from "dotenv";
 import express from "express";
@@ -8,6 +9,15 @@ dotenv.config();
 const logger = morgan(
   ":method :url :status :res[content-length] - :response-time ms"
 );
+
+dataSource
+  .initialize()
+  .then(() => {
+    console.log("Data Source has been initialized!");
+  })
+  .catch((err) => {
+    console.error("Error during Data Source initialization:", err);
+  });
 
 const app = express();
 
