@@ -1,0 +1,38 @@
+services:
+  app:
+    container_name: sandol-notice-notification-app
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+
+    restart: always
+    env_file:
+      - .env.dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./src:/app/src
+    networks:
+      - sandol-network
+    depends_on:
+      - db
+
+  db:
+    container_name: sandol-notice-notification-db
+    image: postgres:15
+    restart: always
+    env_file:
+      - .env.dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - sandol-network
+
+networks:
+  sandol-network:
+    driver: bridge
+
+volumes:
+  db_data:
