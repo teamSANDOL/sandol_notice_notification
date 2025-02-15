@@ -1,4 +1,3 @@
-import { join } from "path";
 import { DataSource } from "typeorm";
 
 export const dataSource = new DataSource({
