@@ -33,13 +33,12 @@ export default [
   {
     rules: {
       "no-unused-vars": [
-        "off",
-        // {
-        //   vars: "all",
-        //   argsIgnorePattern: "^_",
-        //   varsIgnorePattern: "^_",
-        //   caughtErrorsIgnorePattern: "^_",
-        // },
+        "error",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
       ],
       "@typescript-eslint/no-unused-vars": [
         "error",
@@ -50,16 +49,6 @@ export default [
         },
       ],
       "import/order": ["off"],
-      "import/extensions": [
-        "error",
-        "ignorePackages",
-        {
-          js: "never",
-          jsx: "never",
-          ts: "never",
-          tsx: "never",
-        },
-      ],
     },
   },
 ];

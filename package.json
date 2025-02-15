@@ -4,10 +4,12 @@
   "description": "## 📂 개요   **(이 Repository가 담당하는 서비스의 간략한 설명을 작성하세요.)**   이 Repository는 **산돌이 프로젝트**를 위한 표준 템플릿입니다. 모든 서비스는 **Docker 컨테이너로 실행**되며, 이후 **Docker Compose를 활용하여 통합 운영**됩니다.   프론트엔드 서비스(챗봇 서버, 웹 서비스 등)의 경우, 필요에 따라 **독립적인 `docker-compose` 환경에서 운영**될 수 있습니다.   일관된 개발 및 배포 환경을 유지하기 위해 이 템플릿을 사용을 권장하며, 템플릿의 구조 및 내용은 자유롭게 수정해 사용할 수 있습니다.",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint & tsc --noEmit",
     "start:dev": "NODE_ENV='development' nodemon",
     "start:prod": "NODE_ENV='production' node ./dist/app.js",
-    "build": "rm -rf ./dist && tsc && tsc-alias",
-    "start": "npm run build && NODE_ENV='production' node ./dist/app.js"
+    "clean": "rm -rf ./dist",
+    "build": "npm run lint && npm run clean && tsc && tsc-alias",
+    "start": "npm run build && npm run start:prod"
   },
   "keywords": [],
   "author": "",
@@ -24,6 +26,7 @@
     "@types/node": "^22.13.4",
     "@types/nodemon": "^1.19.6",
     "eslint": "^9.20.1",
+    "eslint-config-prettier": "^10.0.1",
     "globals": "^15.15.0",
     "tsc-alias": "^1.8.10",
     "tsconfig-paths": "^4.2.0",
