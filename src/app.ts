@@ -33,7 +33,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use("/", indexRouter);
 
-app.listen(3000, () => {
-  console.log("server is running 3000");
+const port = Number(process.env.APP_PORT) || 3000;
+
+app.listen(port, () => {
+  console.log(`server is running ${port}`);
   console.log(`now NODE_ENV is ${process.env.NODE_ENV}`);
 });
