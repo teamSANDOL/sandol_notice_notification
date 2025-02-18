@@ -10,8 +10,8 @@ export class Notices extends TimeStampEntity {
   @Column({ type: "varchar", length: 2083 })
   url: string;
 
-  @Column({ type: "varchar", length: 2083, name: "short_url" })
-  shortUrl: string;
+  @Column({ type: "varchar", length: 255 })
+  title: string;
 
   @ManyToOne(() => NoticeAuthors, { eager: true, nullable: false })
   @JoinColumn({ name: "author_id" })
