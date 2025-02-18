@@ -1,10 +1,17 @@
 import { dataSource } from "@/connect/data-source";
 import indexRouter from "@/router";
+import { NODE_ENV } from "@/share/const/node-env";
 import dotenv from "dotenv";
 import express from "express";
 import morgan from "morgan";
+import path from "path";
 
-dotenv.config();
+const envPath = process.env.NODE_ENV === NODE_ENV.PROD ? ".env" : ".env.dev";
+
+dotenv.config({
+  debug: true,
+  path: path.resolve(process.cwd(), envPath),
+});
 
 const logger = morgan(
   ":method :url :status :res[content-length] - :response-time ms"

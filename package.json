@@ -5,8 +5,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint & tsc --noEmit",
-    "start:dev": "NODE_ENV='development' nodemon",
-    "start:prod": "NODE_ENV='production' node ./dist/app.js",
+    "start:local": "NODE_ENV='local' nodemon",
+    "start:dev": "nodemon",
+    "start:prod": "NODE_ENV='production' node -r dotenv/config ./dist/app.js",
     "clean": "rm -rf ./dist",
     "build": "npm run lint && npm run clean && tsc && tsc-alias",
     "start": "npm run build && npm run start:prod"
@@ -17,13 +18,17 @@
   "dependencies": {
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "generic-pool": "^3.9.0",
     "morgan": "^1.10.0",
+    "p-queue": "^8.1.0",
     "pg": "^8.13.3",
+    "puppeteer": "^24.2.1",
     "typeorm": "^0.3.20"
   },
   "devDependencies": {
     "@eslint/js": "^9.20.0",
     "@types/express": "^5.0.0",
+    "@types/generic-pool": "^3.8.3",
     "@types/morgan": "^1.9.9",
     "@types/node": "^22.13.4",
     "@types/nodemon": "^1.19.6",
@@ -31,9 +36,9 @@
     "eslint-config-prettier": "^10.0.1",
     "globals": "^15.15.0",
     "nodemon": "^3.1.9",
-    "ts-node": "^10.9.2",
     "tsc-alias": "^1.8.10",
     "tsconfig-paths": "^4.2.0",
+    "tsx": "^4.19.2",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.24.0"
   }
