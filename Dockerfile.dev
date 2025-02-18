@@ -1,4 +1,18 @@
-FROM node:23-alpine
+FROM node:23-alpine3.20
+
+# puppeteer 의 크롤링을 위한 설정
+# https://github.com/puppeteer/puppeteer/issues/7740#issuecomment-1081225615
+RUN apk add --no-cache \
+  msttcorefonts-installer font-noto fontconfig \
+  freetype ttf-dejavu ttf-droid ttf-freefont ttf-liberation \
+  chromium \
+  && rm -rf /var/cache/apk/* /tmp/*
+
+RUN update-ms-fonts \
+  && fc-cache -f
+
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
 # 작업 디렉토리 설정
 WORKDIR /app
@@ -6,6 +20,17 @@ WORKDIR /app
 # 종속성 파일 복사 및 설치
 COPY ./package.json .
 RUN npm install
+
+
+# 권한 없는 pptruser 유저 추가
+RUN addgroup pptruser \
+  && adduser pptruser -D -G pptruser \
+  && mkdir -p /home/pptruser/Downloads \
+  && chown -R pptruser:pptruser /home/pptruser \
+  && chown -R pptruser:pptruser /app
+
+USER pptruser
+
 
 # 애플리케이션 코드 복사
 COPY . .
