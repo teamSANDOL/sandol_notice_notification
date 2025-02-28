@@ -30,6 +30,15 @@ services:
     networks:
       - sandol-network
 
+  amqp:
+    container_name: amqp
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - sandol-network
+
 networks:
   sandol-network:
     driver: bridge
