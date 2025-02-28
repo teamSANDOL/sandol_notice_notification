@@ -8,7 +8,7 @@
 
 ## 📌 프로젝트 구조
 
-- `Express`, `typeorm`, `postgresSQL` (추가 예정)
+- `Express`, `typeorm`, `postgresSQL`, `puppeteer`
 
 ---
 
@@ -21,49 +21,36 @@
 
 ---
 
-## 📌 환경 설정
-
-- **모든 서비스는 Docker 기반으로 실행되므로, 로컬 환경에 별도로 의존하지 않음**  
-- **환경 변수 파일 (`.env`) 필요 시, 샘플 파일 (`.env.example`) 제공**  
-- **Docker Compose를 통해 서비스 간 네트워크 및 볼륨을 설정**  
-- **프론트엔드 서비스(챗봇 서버, 웹 서비스)와 백엔드 서비스(API 서버)의 차이점을 반영하여 개별 실행 가능**  
-
 ### 📌 실행 방법  
 
-#### 1. 기본 실행 (모든 서비스 실행)  
+#### 기본 실행 (모든 서비스 실행)  
 
 ```bash
-docker compose up -d
-```
+git clone --recurse-submodules https://github.com/teamSANDOL/sandol_notice_notification.git
 
-#### 2. 특정 서비스만 실행 (예: 챗봇 서버)  
+git submodule update --remote --recursive
 
-```bash
-docker compose up -d <서비스명>
-```
 
-#### 3. 서비스 중지  
+# 배포 환경
+docker compose -f docker-compose.yml -f sandol_amqp up -d --build
+# 또는 npm run docker:dev:up
+npm run docker:dev:up
 
-```bash
-docker compose down
-```
-
-#### 4. 환경 변수 변경 후 재시작  
-
-```bash
-docker compose up -d --build
+# 개발 환경
+docker compose -f docker-compose.dev.yml -f sandol_amqp up -d --build
+# 또는
+npm run docker:prod:up
 ```
 
 ---
 
 ## 📌 배포 가이드  
 
-- **(CI/CD 적용 여부 및 배포 자동화 여부를 설명하세요.)**  
-  - 예시: `GitHub Actions 사용 여부`, `GCP Cloud Run 자동 배포`, `AWS Lambda 연동 여부` 등  
-- **(배포 시 관리해야 할 환경 변수 및 보안 설정을 명시하세요.)**  
-  - 예시: `.env 파일의 API Key`, `Webhook URL`, `DB 접속 정보` 등
-- **(배포시 주의해야할 사항을 설명하세요.)**
-  - 예시: `별도 domain 연결 필요`, `독립 Database 설정 필요` 등
+- 서브 모듈의 .env.amqp 파일이 필요합니다. 실행시 꼭 서브모듈을 로드해 주세요  
+  - git clone시 --recuse-submodules 옵션과 함께 하기
+  
+- docker compose -f docker-compose.yml -f sandol_amqp/docker-compose.yml up 을 이용합니다.
+- headlthcheck를 이용해 실행 의존성을 설정 하였습니다.
 
 ---
 
