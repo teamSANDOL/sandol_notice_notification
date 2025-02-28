@@ -1,5 +1,8 @@
 {
   "cSpell.words": [
+    "amqp",
+    "fanout",
+    "rabbitmq",
     "sandol",
     "subview",
     "timestamptz",

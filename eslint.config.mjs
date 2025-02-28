@@ -32,14 +32,6 @@ export default [
   // 규칙들
   {
     rules: {
-      "no-unused-vars": [
-        "error",
-        {
-          argsIgnorePattern: "^_",
-          varsIgnorePattern: "^_",
-          caughtErrorsIgnorePattern: "^_",
-        },
-      ],
       "@typescript-eslint/no-unused-vars": [
         "error",
         {
