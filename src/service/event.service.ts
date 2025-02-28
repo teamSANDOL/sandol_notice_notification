@@ -29,21 +29,25 @@ export class EventService {
     // }
   }
 
-  public async publishEvent(routeKey: EVENT_TOPIC, content: string) {
-    await this.ch.assertExchange(EventService.EXCHANGE_NAME, "topic", {
-      durable: true,
-      autoDelete: true,
-    });
+  public async publishEvent(
+    routeKey: keyof typeof EVENT_TOPIC,
+    content: string
+  ) {
+    await this.ch.assertExchange(
+      EventService.EXCHANGE_NAME, //
+      "topic",
+      // { durable: true }
+    );
 
     this.ch.publish(
       EventService.EXCHANGE_NAME, //
-      routeKey,
+      EVENT_TOPIC[routeKey],
       Buffer.from(content)
     );
   }
 
   public async subscribeEvent(
-    routeKey: EVENT_TOPIC,
+    routeKey: keyof typeof EVENT_TOPIC,
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     callback: Function
   ) {
@@ -53,7 +57,7 @@ export class EventService {
     await this.ch.assertExchange(
       EventService.EXCHANGE_NAME, //
       "topic",
-      { autoDelete: true, durable: true }
+      // { durable: true }
     );
 
     // queue 생성
@@ -66,7 +70,7 @@ export class EventService {
     await this.ch.bindQueue(
       assertQueue.queue,
       EventService.EXCHANGE_NAME,
-      routeKey
+      EVENT_TOPIC[routeKey]
     );
 
     this.ch.consume(assertQueue.queue, async (msg) => {
@@ -80,8 +84,10 @@ export class EventService {
   }
 }
 
-export enum EVENT_TOPIC {
-  NOTICE = "notice",
-  NOTICE_DORMITORY = "notice.dormitory",
-  SHUTTLE_SCHEDULE = "shuttlebus",
-}
+export const EVENT_TOPIC = {
+  NOTICE: process.env.SCHOOL_NOTIFICATIONS_TOPIC_NOTICE ?? "",
+  NOTICE_DORMITORY:
+    process.env.SCHOOL_NOTIFICATIONS_TOPIC_NOTICE_DORMITORY ?? "",
+  SHUTTLE_SCHEDULE:
+    process.env.SCHOOL_NOTIFICATIONS_TOPIC_SHUTTLE_SCHEDULE ?? "",
+} as const;

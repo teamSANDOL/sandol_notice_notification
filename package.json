@@ -11,9 +11,10 @@
     "clean": "rm -rf ./dist",
     "build": "npm run lint && npm run clean && tsc && tsc-alias",
     "start": "npm run build && npm run start:prod",
-    "docker:dev:up": "docker compose -f docker-compose.dev.yml up -d --build",
-    "docker:dev:down": "docker compose -f docker-compose.dev.yml down",
-    "docker:prod:up": "docker compose -f docker-compose.yml up -d --build"
+    "submodule": "git submodule update --remote --recursive",
+    "docker:dev:up": "npm run submodule && docker compose -f docker-compose.dev.yml $(for f in **/docker-compose.yml; do echo \"-f $f \" ;done) up -d --build",
+    "docker:dev:down": "npm run submodule && docker compose -f docker-compose.dev.yml $(for f in **/docker-compose.yml; do echo \"-f $f \" ;done) down",
+    "docker:prod:up": "npm run submodule && docker compose -f docker-compose.yml $(for f in docker-compose.yml **/docker-compose.yml; do echo \"-f $f \" ;done) up -d --build"
   },
   "keywords": [],
   "author": "",

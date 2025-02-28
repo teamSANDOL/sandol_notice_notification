@@ -8,6 +8,7 @@ services:
     restart: always
     env_file:
       - .env.dev
+      - sandol_amqp/.env.amqp
     ports:
       - "3000:3000"
     volumes:
@@ -27,15 +28,6 @@ services:
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
-    networks:
-      - sandol-network
-
-  amqp:
-    container_name: amqp
-    image: rabbitmq:3-management
-    ports:
-      - "5672:5672"
-      - "15672:15672"
     networks:
       - sandol-network
 
