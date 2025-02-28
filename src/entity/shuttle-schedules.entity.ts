@@ -11,4 +11,13 @@ export class ShuttleSchedules extends TimeStampEntity {
 
   @Column({ type: "varchar", length: 100 })
   place: string;
+
+  public toJSON() {
+    return {
+      id: this.id,
+      imageUrl: this.imageUrl,
+      place: this.place,
+      createAt: this.createdAt,
+    };
+  }
 }

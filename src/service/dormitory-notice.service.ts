@@ -29,9 +29,7 @@ export class DormitoryNoticeService {
 
   public async cronJob() {
     const findNewNotices = await this.findNewNoticeUsingCrawling();
-    const savedNewNotice = await this.filterNewNoticeAndSaveNewNotice(
-      findNewNotices
-    );
+    const savedNewNotice = await this.filterNotExist(findNewNotices);
 
     const eventService = await EventService.get();
 
@@ -74,7 +72,7 @@ export class DormitoryNoticeService {
     return newNotices.sort((a, b) => a.id - b.id);
   }
 
-  public async filterNewNoticeAndSaveNewNotice(notices: DormitoryNotices[]) {
+  public async filterNotExist(notices: DormitoryNotices[]) {
     const newNotices = [];
     for (const notice of notices) {
       const findNotice = await this.dormitoryNoticeRepository.findOne({

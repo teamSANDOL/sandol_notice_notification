@@ -19,7 +19,7 @@ export class EventService {
     // const eventService = await EventService.get();
     // try {
     //   eventService.subscribeEvent(
-    //     EVENT_TOPIC.NOTICE_DORMITORY,
+    //     EVENT_TOPIC.SHUTTLE_SCHEDULE,
     //     (msg?: string) => {
     //       console.log("msg: ", msg);
     //     }
@@ -83,5 +83,5 @@ export class EventService {
 export enum EVENT_TOPIC {
   NOTICE = "notice",
   NOTICE_DORMITORY = "notice.dormitory",
-  SHUTTLEBUS = "shuttlebus",
+  SHUTTLE_SCHEDULE = "shuttlebus",
 }

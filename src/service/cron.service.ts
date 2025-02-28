@@ -1,6 +1,7 @@
 import { DormitoryNoticeService } from "@/service/dormitory-notice.service";
 import { NoticeService } from "@/service/notice.service";
 import cron from "node-cron";
+import { ShuttleScheduleService } from "./shuttle-schedule.service";
 export class CronService {
   public static async allCronJobBy1Minute() {
     // 1분마다 실행
@@ -25,6 +26,8 @@ export class CronService {
       await dormitoryNoticeService.cronJob();
 
       // 3. 셔틀버스 시간표 변경 크롤링
+      const shuttleScheduleService = await ShuttleScheduleService.get();
+      await shuttleScheduleService.cronJob();
     } catch (err) {
       console.error("CRON ERROR!", err);
     }
