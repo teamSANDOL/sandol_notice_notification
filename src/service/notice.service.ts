@@ -57,7 +57,7 @@ export class NoticeService {
     return newNotices.sort((a, b) => a.id - b.id);
   }
 
-  public async filterNewNoticeAndSaveNewNotice(notices: Notices[]) {
+  public async filterNotExist(notices: Notices[]) {
     const newNotices = [];
     for (const notice of notices) {
       const findNotice = await this.noticeRepository.findOne({
@@ -76,9 +76,7 @@ export class NoticeService {
   // 새로운 공지사항을 크롤링 하고 이벤트 발행
   public async cronJob() {
     const findNewNotices = await this.findNewNoticeUsingCrawling();
-    const savedNewNotice = await this.filterNewNoticeAndSaveNewNotice(
-      findNewNotices
-    );
+    const savedNewNotice = await this.filterNotExist(findNewNotices);
 
     const eventService = await EventService.get();
 
