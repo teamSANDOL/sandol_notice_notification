@@ -18,3 +18,12 @@ export const dataSource = new DataSource({
   ssl: false,
   subscribers: [],
 });
+
+export async function initDB() {
+  try {
+    await dataSource.initialize();
+    console.log("Data Source has been initialized!");
+  } catch (err) {
+    console.error("Error during Data Source initialization:", err);
+  }
+}
