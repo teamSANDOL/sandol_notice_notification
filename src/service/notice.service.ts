@@ -1,10 +1,10 @@
-import { dataSource } from "@/share/lib/typeorm/data-source";
 import { Notices } from "@/entity/notices.entity";
 import { CrawlerService } from "@/service/crawler.service";
-import { EVENT_NAME, EventService } from "@/service/event.service";
+import { EVENT_TOPIC, EventService } from "@/service/event.service";
 import { NoticeAuthorService } from "@/service/notice-author.service";
 import { HREF_TO_URL, SCHOOL_DOMAIN } from "@/share/const/school-domain";
 import { withCrawlerPageClose } from "@/share/decorator/with-crawler-page";
+import { dataSource } from "@/share/lib/typeorm/data-source";
 import { ElementHandle, Page } from "puppeteer";
 import { Repository } from "typeorm";
 
@@ -72,6 +72,8 @@ export class NoticeService {
     return newNotices;
   }
 
+  // node-cron에 의해 실행되는 작업
+  // 새로운 공지사항을 크롤링 하고 이벤트 발행
   public async cronJob() {
     const findNewNotices = await this.findNewNoticeUsingCrawling();
     const savedNewNotice = await this.filterNewNoticeAndSaveNewNotice(
@@ -79,9 +81,10 @@ export class NoticeService {
     );
 
     const eventService = await EventService.get();
+
     savedNewNotice.forEach((notice) => {
       eventService.publishEvent(
-        EVENT_NAME.NEW_NOTICE,
+        EVENT_TOPIC.NOTICE,
         JSON.stringify(notice.toJSON())
       );
     });

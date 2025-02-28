@@ -27,8 +27,8 @@ export class Notices extends TimeStampEntity {
     };
   }
 
-  public static discordMessageOfJSON(json: string) {
-    const { url, title, author, createAt } = JSON.parse(json);
-    return `[(${createAt})${title}](${url})\n작성기관: ${author}`;
-  }
+  // public static toDiscordMessageOfJSON(json: string) {
+  //   const { url, title, author, createAt } = JSON.parse(json);
+  //   return `[(${createAt})${title}](${url})\n작성기관: ${author}`;
+  // }
 }

@@ -1,12 +1,11 @@
 import indexRouter from "@/router";
+import { CronService } from "@/service/cron.service";
 import { EventService } from "@/service/event.service";
-import { NoticeService } from "@/service/notice.service";
 import { NODE_ENV } from "@/share/const/node-env";
 import { initDB } from "@/share/lib/typeorm/data-source";
 import dotenv from "dotenv";
 import express, { NextFunction, Request, Response } from "express";
 import morgan from "morgan";
-import cron from "node-cron";
 import path from "path";
 
 const envPath = process.env.NODE_ENV === NODE_ENV.PROD ? ".env" : ".env.dev";
@@ -35,26 +34,16 @@ app.listen(port, async () => {
   console.log(`server is running ${port}`);
   console.log(`now NODE_ENV is ${process.env.NODE_ENV}`);
 
-  // 모든 리스너 구독
-  await (await EventService.get()).subscribeAllListener();
+  // TODO 모든 이벤트 리스너 구독 (아직 할게 없음)
   console.log("모든 이벤트 리스너 구독!");
+  await EventService.subscribeAllListener();
 
-  // 10초마다 실행
-  cron.schedule("*/10 * * * * *", repeatTaskBy10Minute);
-  repeatTaskBy10Minute();
+  console.log("모든 Cron 작업 실행!");
+  CronService.allCronJobBy2Minute();
 });
 
+// global error handler
 app.use((error: Error, _req: Request, res: Response, _next: NextFunction) => {
   console.log(error);
   res.json({ message: error.message, error: error.name });
 });
-
-// 10초마다 실행되는 task
-async function repeatTaskBy10Minute() {
-  try {
-    const noticeService = await NoticeService.get();
-    await noticeService.cronJob();
-  } catch (err) {
-    console.error("NOTICE SERVICE ERROR!", err);
-  }
-}

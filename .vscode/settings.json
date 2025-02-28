@@ -4,6 +4,7 @@
     "fanout",
     "rabbitmq",
     "sandol",
+    "SHUTTLEBUS",
     "subview",
     "timestamptz",
     "tukorea"
