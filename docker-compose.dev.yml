@@ -16,7 +16,10 @@ services:
     networks:
       - sandol-network
     depends_on:
-      - db
+      amqp:
+        condition: service_healthy
+      db:
+        condition: service_healthy
 
   db:
     container_name: sandol-notice-notification-db
@@ -30,6 +33,12 @@ services:
       - db_data:/var/lib/postgresql/data
     networks:
       - sandol-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-d", "db_prod"]
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s
 
 networks:
   sandol-network:
