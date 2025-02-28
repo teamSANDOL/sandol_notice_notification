@@ -1,3 +1,4 @@
 [submodule "sandol_amqp"]
 	path = sandol_amqp
 	url = https://github.com/teamSANDOL/sandol_amqp.git
+	branch = main
