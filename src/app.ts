@@ -8,11 +8,11 @@ import express, { NextFunction, Request, Response } from "express";
 import morgan from "morgan";
 import path from "path";
 
-const envPath = process.env.NODE_ENV === NODE_ENV.PROD ? ".env" : ".env.dev";
+const isDevEnv = process.env.NODE_ENV !== NODE_ENV.PROD;
 
 dotenv.config({
-  debug: true,
-  path: path.resolve(process.cwd(), envPath),
+  debug: isDevEnv,
+  path: path.resolve(process.cwd(), isDevEnv ? ".env.dev" : ".env"),
 });
 
 const logger = morgan(
@@ -39,7 +39,7 @@ app.listen(port, async () => {
   await EventService.subscribeAllListener();
 
   console.log("모든 Cron 작업 실행!");
-  CronService.allCronJobBy2Minute();
+  await CronService.allCronJobBy1Minute();
 });
 
 // global error handler

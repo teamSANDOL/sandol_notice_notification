@@ -16,4 +16,14 @@ export class DormitoryNotices extends TimeStampEntity {
   @ManyToOne(() => NoticeAuthors, { eager: true, nullable: false })
   @JoinColumn({ name: "author_id" })
   author: NoticeAuthors;
+
+  public toJSON() {
+    return {
+      id: this.id,
+      url: this.url,
+      title: this.title,
+      author: this.author.name,
+      createAt: this.createdAt,
+    };
+  }
 }

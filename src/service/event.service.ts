@@ -15,12 +15,24 @@ export class EventService {
     return this.instance;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  public static async subscribeAllListener() {}
+  public static async subscribeAllListener() {
+    // const eventService = await EventService.get();
+    // try {
+    //   eventService.subscribeEvent(
+    //     EVENT_TOPIC.NOTICE_DORMITORY,
+    //     (msg?: string) => {
+    //       console.log("msg: ", msg);
+    //     }
+    //   );
+    // } catch (err) {
+    //   console.log("err: ", err);
+    // }
+  }
 
   public async publishEvent(routeKey: EVENT_TOPIC, content: string) {
     await this.ch.assertExchange(EventService.EXCHANGE_NAME, "topic", {
       durable: true,
+      autoDelete: true,
     });
 
     this.ch.publish(
@@ -40,14 +52,14 @@ export class EventService {
     // exchange 생성 (있다면 있는것으로 조회)
     await this.ch.assertExchange(
       EventService.EXCHANGE_NAME, //
-      "fanout",
-      { autoDelete: true }
+      "topic",
+      { autoDelete: true, durable: true }
     );
 
     // queue 생성
     const assertQueue = await this.ch.assertQueue(
-      routeKey, //
-      { autoDelete: true }
+      "", //
+      { autoDelete: true, durable: true }
     );
 
     // queue 바인딩
