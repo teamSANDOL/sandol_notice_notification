@@ -1,9 +1,8 @@
-import { dataSource } from "@/connect/data-source";
+import { dataSource } from "@/share/lib/typeorm/data-source";
 import { NoticeAuthors } from "@/entity/notice-authors.entity";
 import { Repository } from "typeorm";
 
 export class NoticeAuthorService {
-  // eslint-disable-next-line no-unused-vars
   constructor(private noticeAuthorRepository: Repository<NoticeAuthors>) {}
 
   public static async get() {

@@ -4,7 +4,6 @@ import puppeteer, { executablePath, Page } from "puppeteer";
 
 export class CrawlerService {
   private static instance: CrawlerService | null;
-  // eslint-disable-next-line no-unused-vars
   constructor(private pagePool: Pool<Page>) {}
 
   // singleton

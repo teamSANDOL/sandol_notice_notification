@@ -16,4 +16,19 @@ export class Notices extends TimeStampEntity {
   @ManyToOne(() => NoticeAuthors, { eager: true, nullable: false })
   @JoinColumn({ name: "author_id" })
   author: NoticeAuthors;
+
+  public toJSON() {
+    return {
+      id: this.id,
+      url: this.url,
+      title: this.title,
+      author: this.author.name,
+      createAt: this.createdAt,
+    };
+  }
+
+  public static discordMessageOfJSON(json: string) {
+    const { url, title, author, createAt } = JSON.parse(json);
+    return `[(${createAt})${title}](${url})\n작성기관: ${author}`;
+  }
 }

@@ -1,6 +1,7 @@
-import { dataSource } from "@/connect/data-source";
+import { dataSource } from "@/share/lib/typeorm/data-source";
 import { Notices } from "@/entity/notices.entity";
 import { CrawlerService } from "@/service/crawler.service";
+import { EVENT_NAME, EventService } from "@/service/event.service";
 import { NoticeAuthorService } from "@/service/notice-author.service";
 import { HREF_TO_URL, SCHOOL_DOMAIN } from "@/share/const/school-domain";
 import { withCrawlerPageClose } from "@/share/decorator/with-crawler-page";
@@ -10,11 +11,8 @@ import { Repository } from "typeorm";
 export class NoticeService {
   page?: Page;
   constructor(
-    // eslint-disable-next-line no-unused-vars
     private noticeRepository: Repository<Notices>,
-    // eslint-disable-next-line no-unused-vars
     private crawlerService: CrawlerService,
-    // eslint-disable-next-line no-unused-vars
     private noticeAuthorService: NoticeAuthorService
   ) {}
 
@@ -29,7 +27,7 @@ export class NoticeService {
   }
 
   @withCrawlerPageClose()
-  public async findNewNotice() {
+  public async findNewNoticeUsingCrawling() {
     if (!this.page) {
       throw new Error("page is not define");
     }
@@ -56,7 +54,37 @@ export class NoticeService {
       }
     });
 
+    return newNotices.sort((a, b) => a.id - b.id);
+  }
+
+  public async filterNewNoticeAndSaveNewNotice(notices: Notices[]) {
+    const newNotices = [];
+    for (const notice of notices) {
+      const findNotice = await this.noticeRepository.findOne({
+        where: { id: notice.id },
+      });
+      if (!findNotice) {
+        await this.noticeRepository.save(notice);
+        newNotices.push(notice);
+      }
+    }
+
     return newNotices;
+  }
+
+  public async cronJob() {
+    const findNewNotices = await this.findNewNoticeUsingCrawling();
+    const savedNewNotice = await this.filterNewNoticeAndSaveNewNotice(
+      findNewNotices
+    );
+
+    const eventService = await EventService.get();
+    savedNewNotice.forEach((notice) => {
+      eventService.publishEvent(
+        EVENT_NAME.NEW_NOTICE,
+        JSON.stringify(notice.toJSON())
+      );
+    });
   }
 
   public async elementToNotice(element: ElementHandle<Element>) {
