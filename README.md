@@ -1,62 +1,67 @@
-# 📌 산돌이 Repository Template
+<p style="text-align: center" align="center">
+  <a href="https://tsed.dev" target="_blank"><img src="https://tsed.dev/tsed-og.png" width="200" alt="Ts.ED logo"/></a>
+</p>
 
-## 📂 개요
+<div align="center">
+  <h1>Ts.ED - sandol-notice-notification</h1>
+  <br />
+  <div align="center">
+    <a href="https://cli.tsed.dev/">Website</a>
+    <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
+    <a href="https://cli.tsed.dev/getting-started.html">Getting started</a>
+    <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
+    <a href="https://slack.tsed.io">Slack</a>
+    <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
+    <a href="https://twitter.com/TsED_io">Twitter</a>
+  </div>
+  <hr />
+</div>
 
-한국공학대학교 실시간 알림 서버 레포지토리 입니다.
+> An awesome project based on Ts.ED framework
 
----
+## Getting started
 
-## 📌 프로젝트 구조
+> **Important!** Ts.ED requires Node >= 20.x or Bun.js and TypeScript >= 5.
 
-- `Express`, `typeorm`, `postgresSQL`, `puppeteer`
+```batch
+# install dependencies
+$ npm install
 
----
+# serve
+$ npm run start
 
-## 📌 문서
-
-- **(API 문서 링크를 삽입하세요.)**
-  - 예시: `[API 문서 (Swagger)](링크)`, `[API 문서 (Notion)](링크)`
-- **(이 Repository에서 제공하는 서비스 관련 문서를 추가하세요.)**
-  - 예시: `챗봇 명령어 목록`, `웹 서비스 이용 가이드`, `Webhook 사용법` 등
-
----
-
-### 📌 실행 방법  
-
-#### 기본 실행 (모든 서비스 실행)  
-
-```bash
-git clone --recurse-submodules https://github.com/teamSANDOL/sandol_notice_notification.git
-
-git submodule update --remote --recursive
-
-
-# 배포 환경
-docker compose -f docker-compose.yml -f sandol_amqp up -d --build
-# 또는 npm run docker:dev:up
-npm run docker:dev:up
-
-# 개발 환경
-docker compose -f docker-compose.dev.yml -f sandol_amqp up -d --build
-# 또는
-npm run docker:prod:up
+# build for production
+$ npm run build
+$ npm run start:prod
 ```
 
----
+## Docker
 
-## 📌 배포 가이드  
+```
+# build docker image
+docker compose build
 
-- 서브 모듈의 .env.amqp 파일이 필요합니다. 실행시 꼭 서브모듈을 로드해 주세요  
-  - git clone시 --recuse-submodules 옵션과 함께 하기
-  
-- docker compose -f docker-compose.yml -f sandol_amqp/docker-compose.yml up 을 이용합니다.
-- headlthcheck를 이용해 실행 의존성을 설정 하였습니다.
+# start docker image
+docker compose up
+```
 
----
+## Barrels
 
-## 📌 문의  
+This project uses [barrels](https://www.npmjs.com/package/@tsed/barrels) to generate index files to import the controllers.
 
-- **(디스코드 채널 링크를 삽입하세요)**
+Edit `.barrels.json` to customize it:
 
----
-🚀 **산돌이 프로젝트와 함께 효율적인 개발 환경을 만들어갑시다!**  
+```json
+{
+  "directory": [
+    "./src/controllers/rest",
+    "./src/controllers/pages"
+  ],
+  "exclude": [
+    "**/__mock__",
+    "**/__mocks__",
+    "**/*.spec.ts"
+  ],
+  "delete": true
+}
+```

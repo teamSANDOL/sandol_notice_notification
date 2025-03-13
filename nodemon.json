@@ -1,7 +1,9 @@
 {
-  "verbose": true,
-  "ignore": ["*.test.js", "**/fixtures/**"],
-  "watch": ["src/**/*.ts"],
-  "exec": "tsx -r dotenv/config src/app.ts",
-  "ext": "js,ts,json"
+  "extensions": ["ts"],
+  "watch": ["src"],
+  "ignore": ["**/*.spec.ts"],
+  "delay": 100,
+  "execMap": {
+    "ts": "node --enable-source-maps --import @swc-node/register/esm-register"
+  }
 }

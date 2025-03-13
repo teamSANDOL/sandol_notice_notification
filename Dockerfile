@@ -1,44 +1,48 @@
-# 📌 Multi-Stage Dockerfile for FastAPI & Node.js Services
+###############################################################################
+###############################################################################
+##                      _______ _____ ______ _____                           ##
+##                     |__   __/ ____|  ____|  __ \                          ##
+##                        | | | (___ | |__  | |  | |                         ##
+##                        | |  \___ \|  __| | |  | |                         ##
+##                        | |  ____) | |____| |__| |                         ##
+##                        |_| |_____/|______|_____/                          ##
+##                                                                           ##
+## description     : Dockerfile for TsED Application                         ##
+## author          : TsED team                                               ##
+## date            : 2023-12-11                                              ##
+## version         : 3.0                                                     ##
+##                                                                           ##
+###############################################################################
+###############################################################################
 
-######################################
-# FastAPI Service
-######################################
-FROM python:3.11 AS fastapi
+ARG NODE_VERSION=20.11.0
 
-# 작업 디렉토리 설정
-WORKDIR /app
+FROM node:${NODE_VERSION}-alpine AS build
+WORKDIR /opt
 
-# 종속성 파일 복사 및 설치
-COPY fastapi/requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY package.json package-lock.json tsconfig.json tsconfig.base.json tsconfig.node.json tsconfig.spec.json .barrels.json .swcrc ./
 
-# 애플리케이션 코드 복사
-COPY fastapi/ .
+RUN npm ci
 
-# 환경 변수 설정 (필요 시 사용)
-ENV APP_ENV=production
+COPY ./src ./src
 
-# 컨테이너 실행 시 기본 명령어 설정
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+RUN npm run build
 
+FROM node:${NODE_VERSION}-alpine AS runtime
+ENV WORKDIR /opt
+WORKDIR $WORKDIR
 
-######################################
-# Node.js Service
-######################################
-FROM node:18 AS nodejs
+RUN apk update && apk add build-base git curl
+RUN npm install -g pm2
 
-# 작업 디렉토리 설정
-WORKDIR /app
+COPY --from=build /opt .
 
-# 종속성 파일 복사 및 설치
-COPY nodejs/package.json nodejs/package-lock.json ./
-RUN npm install --omit=dev
+RUN npm ci --omit=dev --ignore-scripts
 
-# 애플리케이션 코드 복사
-COPY nodejs/ .
+COPY . .
 
-# 환경 변수 설정 (필요 시 사용)
-ENV NODE_ENV=production
+EXPOSE 8081
+ENV PORT 8081
+ENV NODE_ENV production
 
-# 컨테이너 실행 시 기본 명령어 설정
-CMD ["node", "index.js"]
+CMD ["pm2-runtime", "start", "processes.config.cjs", "--env", "production"]

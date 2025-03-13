@@ -16,7 +16,6 @@ app.listen(port, async () => {
   console.log(`server is running ${port}`);
   console.log(`now NODE_ENV is ${process.env.NODE_ENV}`);
 
-  // TODO 모든 이벤트 리스너 구독 (아직 할게 없음)
   console.log("모든 이벤트 리스너 구독!");
   await EventService.subscribeAllListener();
 
