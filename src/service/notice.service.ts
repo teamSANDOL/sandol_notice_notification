@@ -6,7 +6,7 @@ import { HREF_TO_URL, SCHOOL_DOMAIN } from "@/share/const/school-domain";
 import { withCrawlerPageClose } from "@/share/decorator/with-crawler-page";
 import { dataSource } from "@/share/lib/typeorm/data-source";
 import { ElementHandle, Page } from "puppeteer";
-import { Repository } from "typeorm";
+import { LessThan, Repository } from "typeorm";
 
 export class NoticeService {
   page?: Page;
@@ -24,6 +24,32 @@ export class NoticeService {
       crawlerService,
       noticeAuthorService
     );
+  }
+
+  public async findNoticePagination(page = 1, size = 10, cursor?: number) {
+    let createdAt = new Date();
+    if (cursor) {
+      const findNotice = await this.noticeRepository.findOne({
+        where: { id: cursor },
+      });
+
+      if (!findNotice) {
+        throw new Error(`Notice is Not found id: ${cursor}`);
+      }
+
+      createdAt = findNotice.createdAt;
+    }
+    return this.noticeRepository.find({
+      where: {
+        createdAt: LessThan(createdAt),
+      },
+      order: {
+        createdAt: "DESC",
+        id: "DESC",
+      },
+      take: size,
+      skip: (page - 1) * size,
+    });
   }
 
   @withCrawlerPageClose()

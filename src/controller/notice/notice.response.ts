@@ -1,5 +1,6 @@
 import { NoticeAuthorResponse } from "@/controller/notice-author/notice-author.response";
-import { Type } from "class-transformer";
+import { Notices } from "@/entity/notices.entity";
+import { plainToInstance, Type } from "class-transformer";
 import { IsDate, IsInt, IsString, ValidateNested } from "class-validator";
 import "reflect-metadata";
 
@@ -19,4 +20,8 @@ export class NoticeResponse {
 
   @IsDate()
   createdAt: Date;
+
+  static of(notice: Notices) {
+    return plainToInstance(NoticeResponse, notice);
+  }
 }
