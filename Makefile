@@ -8,4 +8,4 @@ docker-dev-up:
 	docker compose -f docker-compose.dev.yml $(shell for f in **/docker-compose.yml; do echo "-f $$f ";done) up -d --build
 
 docker-prod-up:
-	@docker compose -f docker-compose.yml $(for f in docker-compose.yml **/docker-compose.yml; do echo \"-f $f \" ;done) up -d --build
+	@docker compose -f docker-compose.yml $(shell for f in docker-compose.yml **/docker-compose.yml; do echo "-f $$f " ;done) up -d --build

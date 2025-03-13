@@ -1,31 +1,13 @@
-import indexRouter from "@/router";
+import { createExpress } from "@/config";
 import { CronService } from "@/service/cron.service";
 import { EventService } from "@/service/event.service";
-import { NODE_ENV } from "@/share/const/node-env";
 import { initDB } from "@/share/lib/typeorm/data-source";
-import dotenv from "dotenv";
-import express, { NextFunction, Request, Response } from "express";
-import morgan from "morgan";
-import path from "path";
+import type { Express } from "express";
 
-const isDevEnv = process.env.NODE_ENV !== NODE_ENV.PROD;
+import "@/config/dotenv.config";
+import "reflect-metadata";
 
-dotenv.config({
-  debug: isDevEnv,
-  path: path.resolve(process.cwd(), isDevEnv ? ".env.dev" : ".env"),
-});
-
-const logger = morgan(
-  ":method :url :status :res[content-length] - :response-time ms"
-);
-
-const app = express();
-
-app.use(logger);
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-
-app.use("/", indexRouter);
+const app: Express = createExpress();
 
 const port = Number(process.env.APP_PORT) || 3000;
 
@@ -40,10 +22,4 @@ app.listen(port, async () => {
 
   console.log("모든 Cron 작업 실행!");
   await CronService.allCronJobBy1Minute();
-});
-
-// global error handler
-app.use((error: Error, _req: Request, res: Response, _next: NextFunction) => {
-  console.log(error);
-  res.json({ message: error.message, error: error.name });
 });
