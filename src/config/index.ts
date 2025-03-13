@@ -1,15 +1,13 @@
+import { getExpressAppWithController } from "@/config/controller.config";
 import { logger } from "@/config/logger.config";
-import {
-  routingControllersOptions,
-  swaggerSpec,
-} from "@/config/swagger.config";
+import { swaggerSpec } from "@/config/swagger.config";
 import type { Express } from "express";
 import express, { NextFunction, Request, Response } from "express";
-import { createExpressServer } from "routing-controllers";
+
 import * as swaggerUiExpress from "swagger-ui-express";
 
 export const createExpress = () => {
-  const app = createExpressServer(routingControllersOptions);
+  const app = getExpressAppWithController();
   setMiddleWare(app);
   setGlobalErrorHandler(app);
   return app;

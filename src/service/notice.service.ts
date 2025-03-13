@@ -1,6 +1,6 @@
 import { Notices } from "@/entity/notices.entity";
 import { CrawlerService } from "@/service/crawler.service";
-import { EVENT_TOPIC, EventService } from "@/service/event.service";
+import { EventService } from "@/service/event.service";
 import { NoticeAuthorService } from "@/service/notice-author.service";
 import { HREF_TO_URL, SCHOOL_DOMAIN } from "@/share/const/school-domain";
 import { withCrawlerPageClose } from "@/share/decorator/with-crawler-page";
@@ -81,10 +81,7 @@ export class NoticeService {
     const eventService = await EventService.get();
 
     savedNewNotice.forEach((notice) => {
-      eventService.publishEvent(
-        EVENT_TOPIC.NOTICE,
-        JSON.stringify(notice.toJSON())
-      );
+      eventService.publishEvent("NOTICE", JSON.stringify(notice.toJSON()));
     });
   }
 

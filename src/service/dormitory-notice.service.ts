@@ -1,6 +1,6 @@
 import { DormitoryNotices } from "@/entity/dormitory-notices.entity";
 import { CrawlerService } from "@/service/crawler.service";
-import { EVENT_TOPIC, EventService } from "@/service/event.service";
+import { EventService } from "@/service/event.service";
 import { NoticeAuthorService } from "@/service/notice-author.service";
 import { HREF_TO_URL, SCHOOL_DOMAIN } from "@/share/const/school-domain";
 import { withCrawlerPageClose } from "@/share/decorator/with-crawler-page";
@@ -36,7 +36,7 @@ export class DormitoryNoticeService {
     savedNewNotice.forEach(async (dormitoryNotice) => {
       console.log("dormitoryNotice", dormitoryNotice.toJSON());
       await eventService.publishEvent(
-        EVENT_TOPIC.NOTICE_DORMITORY,
+        "NOTICE_DORMITORY",
         JSON.stringify(dormitoryNotice.toJSON())
       );
     });

@@ -1,19 +1,17 @@
-import { NoticeController } from "@/controller/notice.controller";
+import { routingControllersOptions } from "@/config/controller.config";
 import { validationMetadatasToSchemas } from "class-validator-jsonschema";
 
 import "reflect-metadata";
 import { getMetadataArgsStorage } from "routing-controllers";
 
 import { routingControllersToSpec } from "routing-controllers-openapi";
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { defaultMetadataStorage } = require("class-transformer/cjs/storage");
 
 const storage = getMetadataArgsStorage();
 
-export const routingControllersOptions = {
-  controllers: [NoticeController],
-  routePrefix: "/api",
-};
-
 const schemas = validationMetadatasToSchemas({
+  classTransformerMetadataStorage: defaultMetadataStorage,
   refPointerPrefix: "#/components/schemas/",
 });
 

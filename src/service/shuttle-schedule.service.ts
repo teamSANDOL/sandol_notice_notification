@@ -1,6 +1,6 @@
 import { ShuttleSchedules } from "@/entity/shuttle-schedules.entity";
 import { CrawlerService } from "@/service/crawler.service";
-import { EVENT_TOPIC, EventService } from "@/service/event.service";
+import { EventService } from "@/service/event.service";
 import { withCrawlerPageClose } from "@/share/decorator/with-crawler-page";
 import { dataSource } from "@/share/lib/typeorm/data-source";
 import { ElementHandle, Page } from "puppeteer";
@@ -31,7 +31,7 @@ export class ShuttleScheduleService {
 
     savedNewShuttleSchedule.forEach((schedule) => {
       eventService.publishEvent(
-        EVENT_TOPIC.SHUTTLE_SCHEDULE,
+        "SHUTTLE_SCHEDULE",
         JSON.stringify(schedule.toJSON())
       );
     });

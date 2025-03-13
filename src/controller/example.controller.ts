@@ -86,7 +86,7 @@ export class UsersController {
   }
 
   @Put("/")
-  createManyUsers(@Body({ type: CreateUserBody }) body: CreateUserBody[]) {
+  createManyUsers(@Body({ type: CreateUserBody }) _body: CreateUserBody[]) {
     return {};
   }
 }
