@@ -1,0 +1,23 @@
+import { TimeStampEntity } from "@/db/entity/timestamp.entity";
+import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+
+@Entity({ name: "shuttle_schedules" })
+export class ShuttleSchedules extends TimeStampEntity {
+  @PrimaryGeneratedColumn("increment", { type: "bigint" })
+  id: number;
+
+  @Column({ type: "varchar", length: 2083, name: "image_url" })
+  imageUrl: string;
+
+  @Column({ type: "varchar", length: 100 })
+  place: string;
+
+  public toJSON() {
+    return {
+      id: this.id,
+      imageUrl: this.imageUrl,
+      place: this.place,
+      createAt: this.createdAt,
+    };
+  }
+}
