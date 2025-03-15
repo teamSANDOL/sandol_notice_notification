@@ -1,41 +1,8 @@
 {
   "$schema": "https://json.schemastore.org/nest-cli",
   "collection": "@nestjs/schematics",
-  "sourceRoot": "apps/sandol_notice_notification/src",
+  "sourceRoot": "src",
   "compilerOptions": {
-    "deleteOutDir": true,
-    "webpack": true,
-    "tsConfigPath": "apps/sandol_notice_notification/tsconfig.app.json"
-  },
-  "monorepo": true,
-  "root": "apps/sandol_notice_notification",
-  "projects": {
-    "a1": {
-      "type": "application",
-      "root": "apps/a1",
-      "entryFile": "main",
-      "sourceRoot": "apps/a1/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/a1/tsconfig.app.json"
-      }
-    },
-    "sandol_notice_notification": {
-      "type": "application",
-      "root": "apps/sandol_notice_notification",
-      "entryFile": "main",
-      "sourceRoot": "apps/sandol_notice_notification/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/sandol_notice_notification/tsconfig.app.json"
-      }
-    },
-    "users": {
-      "type": "application",
-      "root": "apps/users",
-      "entryFile": "main",
-      "sourceRoot": "apps/users/src",
-      "compilerOptions": {
-        "tsConfigPath": "apps/users/tsconfig.app.json"
-      }
-    }
+    "deleteOutDir": true
   }
 }
