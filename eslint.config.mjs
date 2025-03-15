@@ -1,46 +1,43 @@
-import { FlatCompat } from "@eslint/eslintrc";
-import pluginJs from "@eslint/js";
-import eslintConfigPrettier from "eslint-config-prettier";
-import globals from "globals";
-import path from "path";
-import tseslint from "typescript-eslint";
-import { fileURLToPath } from "url";
+// @ts-check
+import pluginJs from '@eslint/js';
+import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
+import globals from 'globals';
+import tseslint from 'typescript-eslint';
 
-// mimic CommonJS variables -- not needed if using CommonJS
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
-
-/** @type {import('eslint').Linter.Config[]} */
+/** @type { import('typescript-eslint').ConfigArray } */
 export default [
-  { files: ["**/*.{js,mjs,cjs,ts}"] },
-  { languageOptions: { globals: globals.node } },
-  // ...compat.extends("eslint-config-airbnb-base"),
   pluginJs.configs.recommended,
+  eslintPluginPrettierRecommended,
   ...tseslint.configs.recommended,
-  eslintConfigPrettier,
-  ...tseslint.configs.stylistic,
-  // 무시할 파일들
   {
-    // Note: there should be no other properties in this object
-    ignores: ["eslint.config.mjs"],
-  },
-
-  // 규칙들
-  {
+    files: ['**/*.{js,mjs,cjs,ts}'],
+    // 무시할 파일들
+    ignores: ['eslint.config.mjs'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        ...globals.jest,
+      },
+      ecmaVersion: 5,
+      sourceType: 'module',
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
     rules: {
-      "@typescript-eslint/no-unused-vars": [
-        "error",
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-floating-promises': 'warn',
+      '@typescript-eslint/no-unsafe-argument': 'warn',
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
         {
-          argsIgnorePattern: "^_",
-          varsIgnorePattern: "^_",
-          caughtErrorsIgnorePattern: "^_",
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
         },
       ],
-      "import/order": ["off"],
+      'import/order': ['off'],
     },
   },
 ];
