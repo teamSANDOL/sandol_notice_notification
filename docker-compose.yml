@@ -1,14 +1,47 @@
-version: '3.5'
+version: "3.5"
 services:
-  server:
+  app:
+    container_name: sandol-notice-notification-app
     build:
       context: .
-      dockerfile: ./Dockerfile
-      args:
-        - http_proxy
-        - https_proxy
-        - no_proxy
+      dockerfile: Dockerfile
     image: sandol-notice-notification/server:latest
+    restart: always
+    env_file:
+      - .env
+      - sandol_amqp/.env.amqp
     ports:
       - "8081:8081"
+    networks:
+      - sandol-network
+    depends_on:
+      amqp:
+        condition: service_healthy
+      db:
+        condition: service_healthy
 
+  db:
+    container_name: sandol-notice-notification-db
+    image: postgres:15
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - sandol-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-d", "db_prod"]
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s
+
+networks:
+  sandol-network:
+    driver: bridge
+
+volumes:
+  db_data:

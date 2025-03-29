@@ -1,4 +1,4 @@
-FROM node:23-alpine3.20
+FROM node:20.11.0-alpine
 
 # puppeteer 의 크롤링을 위한 설정
 # https://github.com/puppeteer/puppeteer/issues/7740#issuecomment-1081225615
@@ -29,8 +29,8 @@ RUN addgroup pptruser \
 
 # Create dist directory and set permissions
 RUN mkdir -p /app/dist && \
-    chown -R pptruser:pptruser /app && \
-    chmod -R 755 /app
+  chown -R pptruser:pptruser /app && \
+  chmod -R 755 /app
 
 USER pptruser
 
