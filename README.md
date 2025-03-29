@@ -1,98 +1,96 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 📌 산돌이 공지사항 알림 서버
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## 📂 개요
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+한국공학대학교 공지사항 실시간 알림 서버입니다. 공지사항을 크롤링하여 실시간으로 알림을 제공합니다.
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 📌 프로젝트 구조
 
-## Project setup
+- `NestJS`, `TypeORM`, `PostgreSQL`, `RabbitMQ`, `Puppeteer`
 
-```bash
-$ npm install
-```
+---
 
-## Compile and run the project
+## 📌 문서
 
-```bash
-# development
-$ npm run start
+- [API 문서 (Swagger)](http://localhost:3000/doc)
+  - API 엔드포인트 및 요청/응답 스키마 확인
+  - API 테스트 및 디버깅
+- [서비스 가이드](https://github.com/your-org/sandol_notice_notification/wiki)
+  - 크롤링 설정
+  - 알림 설정
+  - 데이터베이스 관리
 
-# watch mode
-$ npm run start:dev
+---
 
-# production mode
-$ npm run start:prod
-```
+## 📌 환경 설정
 
-## Run tests
+- **모든 서비스는 Docker 기반으로 실행되므로, 로컬 환경에 별도로 의존하지 않음**  
+- **환경 변수 파일 (`.env.dev`) 필요**  
+- **Docker Compose를 통해 서비스 간 네트워크 및 볼륨을 설정**  
+
+### 📌 실행 방법  
+
+#### 1. 개발 환경 실행
 
 ```bash
-# unit tests
-$ npm run test
+# 모든 서비스 실행 (앱, DB, RabbitMQ)
+docker compose -f docker-compose.dev.yml up -d
 
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+# 특정 서비스만 실행
+docker compose -f docker-compose.dev.yml up -d app
+docker compose -f docker-compose.dev.yml up -d db
+docker compose -f docker-compose.dev.yml up -d amqp
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+#### 2. 프로덕션 환경 실행
 
 ```bash
-$ npm install -g mau
-$ mau deploy
+# 프로덕션 서비스 실행
+docker compose up -d
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+#### 3. 서비스 중지  
 
-## Resources
+```bash
+# 개발 환경 중지
+docker compose -f docker-compose.dev.yml down
 
-Check out a few resources that may come in handy when working with NestJS:
+# 프로덕션 환경 중지
+docker compose down
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+#### 4. 환경 변수 변경 후 재시작  
 
-## Support
+```bash
+docker compose -f docker-compose.dev.yml up -d --build
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+---
 
-## Stay in touch
+## 📌 배포 가이드  
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### CI/CD
+- GitHub Actions를 통한 자동 배포
+- Docker 이미지 자동 빌드 및 푸시
 
-## License
+### 환경 변수
+- `.env.dev`: 개발 환경 설정
+- `.env`: 프로덕션 환경 설정
+- `sandol_amqp/.env.amqp`: RabbitMQ 설정
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+### 배포 주의사항
+- 프로덕션 환경에서는 반드시 `.env` 파일 설정 필요
+- 데이터베이스 백업 설정 필요
+- SSL 인증서 설정 필요
+
+---
+
+## 📌 문의  
+
+- [산돌이 디스코드](https://discord.gg/your-invite)
+
+---
+🚀 **산돌이 프로젝트와 함께 효율적인 개발 환경을 만들어갑시다!**
+****
