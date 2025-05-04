@@ -3,10 +3,12 @@ import { NestFactory } from "@nestjs/core";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
 
+const PREFIX = "/notice-notification";
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  app.setGlobalPrefix("api");
+  app.setGlobalPrefix(PREFIX);
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -26,7 +28,7 @@ async function bootstrap() {
     .build();
 
   const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup("doc", app, documentFactory);
+  SwaggerModule.setup(`${PREFIX}/doc`, app, documentFactory);
 
   await app.listen(process.env.PORT ?? 3000);
 }
