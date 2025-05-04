@@ -56,3 +56,5 @@ test/**/*.js.map
 .env.local
 .env.development
 .env
+
+/db_data
