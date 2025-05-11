@@ -1,4 +1,4 @@
-FROM node:20.11.0-alpine
+FROM node:22-alpine
 
 # puppeteer 의 크롤링을 위한 설정
 # https://github.com/puppeteer/puppeteer/issues/7740#issuecomment-1081225615

@@ -14,10 +14,7 @@ export class CrawlerService {
     const browser = await puppeteer.launch({
       headless: process.env.NODE_ENV !== NODE_ENV.LOCAL,
       executablePath: executablePath(),
-      args: [
-        // "--start-maximized",
-        // "--no-sandbox",
-      ],
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
     const pagePool = genericPool.createPool(
       {
