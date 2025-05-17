@@ -22,7 +22,7 @@ export class CrawlerService {
           return await browser.newPage();
         },
         destroy: async (page: Page) => {
-          page.close();
+          await page.close();
         },
       },
       {
@@ -40,9 +40,12 @@ export class CrawlerService {
     }
 
     this.queue.add(async () => {
-      const page = await this.pagePool.acquire();
-      await fn(page);
-      await this.pagePool.release(page);
+      return new Promise<void>((resolve) => {
+        this.pagePool.use(async (page) => {
+          await fn(page);
+          resolve();
+        });
+      });
     });
 
     return;
