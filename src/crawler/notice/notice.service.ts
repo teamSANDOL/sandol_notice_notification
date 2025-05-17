@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { HREF_TO_URL, SCHOOL_DOMAIN } from "@/config/school-domain";
-import { AmqpService } from "@/crawler/amqp/amqp.service";
+import { AmqpService, EventTopic } from "@/crawler/amqp/amqp.service";
 import { CrawlerService } from "@/crawler/crawler/crawler.service";
 import { NoticeAuthorService } from "@/crawler/notice-author/notice-author.service";
 import { Notices } from "@/db/entity/notices.entity";
@@ -27,6 +27,17 @@ export class NoticeService {
   ) {}
 
   async onModuleInit(): Promise<void> {
+    await this.amqpService.subscribeEvent(
+      "NOTICE QUEUE",
+      EventTopic.enum.Notice,
+      (content: string) => {
+        console.log(
+          "AMQP로 새로운 공지사항",
+          JSON.parse(content)["title"],
+          "를 받았습니다.",
+        );
+      },
+    );
     await this.cronJob();
   }
 
@@ -40,7 +51,10 @@ export class NoticeService {
 
     savedNewNotice.forEach((notice) => {
       console.log(`새로운 공지사항: ${notice.title}`);
-      this.amqpService.publishEvent("NOTICE", JSON.stringify(notice.toJSON()));
+      this.amqpService.publishEvent(
+        EventTopic.enum.Notice,
+        JSON.stringify(notice.toJSON()),
+      );
     });
   }
 

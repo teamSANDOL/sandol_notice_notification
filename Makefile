@@ -16,6 +16,9 @@ docker-dev-stop:
 docker-prod-up:
 	docker compose $(COMPOSE_FILES_PROD) up -d --build
 
+docker-prod-down:
+	docker compose $(COMPOSE_FILES_PROD) down
+
 docker-prod-stop:
 	docker compose $(COMPOSE_FILES_PROD) stop
 

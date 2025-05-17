@@ -1,4 +1,4 @@
-import { AmqpService } from "@/crawler/amqp/amqp.service";
+import { AmqpService, EventTopic } from "@/crawler/amqp/amqp.service";
 import { CrawlerService } from "@/crawler/crawler/crawler.service";
 import { NoticeAuthorService } from "@/crawler/notice-author/notice-author.service";
 import { DormitoryNotices } from "@/db/entity/dormitory-notices.entity";
@@ -27,6 +27,17 @@ export class DormitoryNoticeService {
   ) {}
 
   async onModuleInit(): Promise<void> {
+    await this.amqpService.subscribeEvent(
+      "NOTICE_DORMITORY QUEUE",
+      EventTopic.enum.NoticeDormitory,
+      (content: string) => {
+        console.log(
+          "AMQP로 새로운 기숙사 공지사항",
+          JSON.parse(content)["title"],
+          "를 받았습니다.",
+        );
+      },
+    );
     await this.cronJob();
   }
 
@@ -40,7 +51,7 @@ export class DormitoryNoticeService {
     savedNewNotice.forEach((notice) => {
       console.log(`새로운 기숙사 공지사항: ${notice.title}`);
       this.amqpService.publishEvent(
-        "NOTICE_DORMITORY",
+        EventTopic.enum.NoticeDormitory,
         JSON.stringify(notice.toJSON()),
       );
     });
@@ -120,7 +131,7 @@ export class DormitoryNoticeService {
 
     const newNotice = this.dormitoryNoticeRepository.create({
       id,
-      url: href,
+      url: `${href}?layout=unknown`,
       title,
     });
 
