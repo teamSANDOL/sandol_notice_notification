@@ -18,6 +18,9 @@ export class Notices extends TimeStampEntity {
   @Column({ type: "varchar", length: 255 })
   title: string;
 
+  @Column({ type: "text", nullable: true })
+  html: string;
+
   @ManyToOne(() => NoticeAuthors, { eager: true, nullable: false })
   @JoinColumn({ name: "author_id" })
   author: NoticeAuthors;
@@ -27,6 +30,7 @@ export class Notices extends TimeStampEntity {
       id: this.id,
       url: this.url,
       title: this.title,
+      html: this.html,
       author: this.author.name,
       createAt: this.createdAt,
     };

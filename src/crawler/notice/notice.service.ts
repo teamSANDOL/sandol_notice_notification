@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-import { HREF_TO_URL, SCHOOL_DOMAIN } from "@/config/school-domain";
+import { SCHOOL_DOMAIN } from "@/config/school-domain";
 import { AmqpService, EventTopic } from "@/crawler/amqp/amqp.service";
 import { CrawlerService } from "@/crawler/crawler/crawler.service";
 import { NoticeAuthorService } from "@/crawler/notice-author/notice-author.service";
@@ -7,6 +6,7 @@ import { Notices } from "@/db/entity/notices.entity";
 import { Inject, Injectable } from "@nestjs/common";
 import { Interval } from "@nestjs/schedule";
 import { InjectRepository } from "@nestjs/typeorm";
+import { minify } from "html-minifier-terser";
 import _ from "lodash";
 import { ElementHandle } from "puppeteer";
 import { In, Repository } from "typeorm";
@@ -80,7 +80,7 @@ export class NoticeService {
             return re.value;
           } else {
             console.log("element can't convert notice");
-            throw new Error(re.reason);
+            throw new Error(re.reason as string);
           }
         });
 
@@ -107,7 +107,7 @@ export class NoticeService {
     const aTag = await element.toElement("a");
 
     const data = await aTag.evaluate(async (el) => {
-      const href = el.href;
+      const href = `${el.href}?layout=unknown`;
 
       const title = el.querySelector<HTMLDivElement>(
         "div[class='title'] > strong",
@@ -130,14 +130,30 @@ export class NoticeService {
 
     const { authorName, href, id, title } = data;
 
+    const html = await new Promise<string>((resolve) => {
+      this.crawlerService.startCraw(async (page) => {
+        await page.goto(href);
+        const html = await page.content();
+
+        resolve(html);
+      });
+    });
+
     const author = await this.noticeAuthorService.upsertNoticeAuthorByName(
       authorName!,
     );
 
     const newNotice = this.noticeRepository.create({
       id,
-      url: HREF_TO_URL(href),
+      url: href,
       title,
+      html: await minify(html, {
+        collapseWhitespace: true, // 공백·줄바꿈 제거
+        removeComments: true, // 주석 제거
+        removeAttributeQuotes: true, // 속성 따옴표 제거
+        minifyCSS: true,
+        minifyJS: true,
+      }),
     });
 
     newNotice.author = author;

@@ -42,6 +42,9 @@ export class CrawlerService {
     this.queue.add(async () => {
       return new Promise<void>((resolve) => {
         this.pagePool.use(async (page) => {
+          // page.on("console", (msg) => {
+          //   console.log("PAGE LOG:", msg.text());
+          // });
           await fn(page);
           resolve();
         });

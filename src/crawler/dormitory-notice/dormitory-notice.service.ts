@@ -2,9 +2,10 @@ import { AmqpService, EventTopic } from "@/crawler/amqp/amqp.service";
 import { CrawlerService } from "@/crawler/crawler/crawler.service";
 import { NoticeAuthorService } from "@/crawler/notice-author/notice-author.service";
 import { DormitoryNotices } from "@/db/entity/dormitory-notices.entity";
-import { Inject, Injectable, Logger } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { Interval } from "@nestjs/schedule";
 import { InjectRepository } from "@nestjs/typeorm";
+import { minify } from "html-minifier-terser";
 import _ from "lodash";
 import { ElementHandle } from "puppeteer";
 import { In, Repository } from "typeorm";
@@ -12,8 +13,6 @@ import z from "zod";
 
 @Injectable()
 export class DormitoryNoticeService {
-  private readonly logger = new Logger(DormitoryNoticeService.name);
-
   constructor(
     @InjectRepository(DormitoryNotices)
     private dormitoryNoticeRepository: Repository<DormitoryNotices>,
@@ -50,9 +49,10 @@ export class DormitoryNoticeService {
   public async cronJob() {
     const findNewNotices = await this.findNewNoticeUsingCrawling();
     const savedNewNotice = await this.filterNotExist(findNewNotices);
-    savedNewNotice.forEach((notice) => {
+
+    savedNewNotice.forEach(async (notice) => {
       console.log(`새로운 기숙사 공지사항: ${notice.title}`);
-      this.amqpService.publishEvent(
+      await this.amqpService.publishEvent(
         EventTopic.enum.NoticeDormitory,
         JSON.stringify(notice.toJSON()),
       );
@@ -100,7 +100,7 @@ export class DormitoryNoticeService {
     const aTag = await element.toElement("a");
 
     const rawData = await aTag.evaluate(async (el) => {
-      const href = el.href;
+      const href = `${el.href}?layout=unknown`;
       const title = el.querySelector<HTMLDivElement>(
         "div[class='title'] > strong",
       )?.innerText;
@@ -130,10 +130,26 @@ export class DormitoryNoticeService {
       authorName!,
     );
 
+    const html = await new Promise<string>((resolve) => {
+      this.crawlerService.startCraw(async (page) => {
+        await page.goto(href);
+        const html = await page.content();
+
+        resolve(html);
+      });
+    });
+
     const newNotice = this.dormitoryNoticeRepository.create({
       id,
-      url: `${href}?layout=unknown`,
+      url: href,
       title,
+      html: await minify(html, {
+        collapseWhitespace: true, // 공백·줄바꿈 제거
+        removeComments: true, // 주석 제거
+        removeAttributeQuotes: true, // 속성 따옴표 제거
+        minifyCSS: true,
+        minifyJS: true,
+      }),
     });
 
     newNotice.author = author;
