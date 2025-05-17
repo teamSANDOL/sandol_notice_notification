@@ -5,8 +5,10 @@ import { DormitoryNotices } from "@/db/entity/dormitory-notices.entity";
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { Interval } from "@nestjs/schedule";
 import { InjectRepository } from "@nestjs/typeorm";
+import _ from "lodash";
 import { ElementHandle } from "puppeteer";
-import { Repository } from "typeorm";
+import { In, Repository } from "typeorm";
+import z from "zod";
 
 @Injectable()
 export class DormitoryNoticeService {
@@ -81,18 +83,17 @@ export class DormitoryNoticeService {
   }
 
   public async filterNotExist(notices: DormitoryNotices[]) {
-    const newNotices: DormitoryNotices[] = [];
-    for (const notice of notices) {
-      const findNotice = await this.dormitoryNoticeRepository.findOne({
-        where: { id: notice.id },
-      });
-      if (!findNotice) {
-        await this.dormitoryNoticeRepository.save(notice);
-        newNotices.push(notice);
-      }
-    }
+    const existNotices = await this.dormitoryNoticeRepository.find({
+      where: { id: In(_.map(notices, (v) => v.id)) },
+    });
 
-    return newNotices;
+    const notExistNotices = _.differenceWith(notices, existNotices, (n, eN) => {
+      return z.number().parse(n.id) === z.number().parse(eN.id);
+    });
+
+    await this.dormitoryNoticeRepository.save(notExistNotices);
+
+    return notExistNotices;
   }
 
   public async elementToNotice(element: ElementHandle<Element>) {

@@ -1,5 +1,8 @@
+import { DormitoryNoticeRestController } from "@/api/dormitory-notice-rest/dormitory-notice-rest.controller";
+import { DormitoryNoticeRestService } from "@/api/dormitory-notice-rest/dormitory-notice-rest.service";
 import { NoticeRestController } from "@/api/notice-rest/notice-rest.controller";
 import { NoticeRestService } from "@/api/notice-rest/notice-rest.service";
+import { DormitoryNotices } from "@/db/entity/dormitory-notices.entity";
 import { NoticeAuthors } from "@/db/entity/notice-authors.entity";
 import { Notices } from "@/db/entity/notices.entity";
 import { ShuttleSchedules } from "@/db/entity/shuttle-schedules.entity";
@@ -8,9 +11,14 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Notices, NoticeAuthors, ShuttleSchedules]),
+    TypeOrmModule.forFeature([
+      Notices,
+      NoticeAuthors,
+      ShuttleSchedules,
+      DormitoryNotices,
+    ]),
   ],
-  providers: [NoticeRestService],
-  controllers: [NoticeRestController],
+  providers: [NoticeRestService, DormitoryNoticeRestService],
+  controllers: [NoticeRestController, DormitoryNoticeRestController],
 })
 export class ApiModule {}

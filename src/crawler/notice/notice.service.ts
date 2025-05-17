@@ -7,8 +7,10 @@ import { Notices } from "@/db/entity/notices.entity";
 import { Inject, Injectable } from "@nestjs/common";
 import { Interval } from "@nestjs/schedule";
 import { InjectRepository } from "@nestjs/typeorm";
+import _ from "lodash";
 import { ElementHandle } from "puppeteer";
-import { Repository } from "typeorm";
+import { In, Repository } from "typeorm";
+import z from "zod";
 
 @Injectable()
 export class NoticeService {
@@ -88,18 +90,17 @@ export class NoticeService {
   }
 
   public async filterNotExist(notices: Notices[]) {
-    const newNotices: Notices[] = [];
-    for (const notice of notices) {
-      const findNotice = await this.noticeRepository.findOne({
-        where: { id: notice.id },
-      });
-      if (!findNotice) {
-        await this.noticeRepository.save(notice);
-        newNotices.push(notice);
-      }
-    }
+    const existNotices = await this.noticeRepository.find({
+      where: { id: In(_.map(notices, (v) => v.id)) },
+    });
 
-    return newNotices;
+    const notExistNotices = _.differenceWith(notices, existNotices, (n, eN) => {
+      return z.number().parse(n.id) === z.number().parse(eN.id);
+    });
+
+    await this.noticeRepository.save(notExistNotices);
+
+    return notExistNotices;
   }
 
   public async elementToNotice(element: ElementHandle<Element>) {

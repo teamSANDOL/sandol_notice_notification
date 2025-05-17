@@ -4,7 +4,12 @@ import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
 
 @Entity({ name: "dormitory_notices" })
 export class DormitoryNotices extends TimeStampEntity {
-  @PrimaryColumn("bigint")
+  @PrimaryColumn("bigint", {
+    transformer: {
+      from: (value: string) => Number(value),
+      to: (value: number) => value,
+    },
+  })
   id: number;
 
   @Column({ type: "varchar", length: 2083 })
