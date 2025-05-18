@@ -1,5 +1,6 @@
 import { DormitoryNoticeRestController } from "@/api/dormitory-notice-rest/dormitory-notice-rest.controller";
 import { DormitoryNoticeRestService } from "@/api/dormitory-notice-rest/dormitory-notice-rest.service";
+import { HealthModule } from "@/api/health/health.module";
 import { NoticeRestController } from "@/api/notice-rest/notice-rest.controller";
 import { NoticeRestService } from "@/api/notice-rest/notice-rest.service";
 import { ShuttleRestController } from "@/api/shuttle-rest/shuttle-rest.controller";
@@ -19,6 +20,7 @@ import { TypeOrmModule } from "@nestjs/typeorm";
       ShuttleSchedules,
       DormitoryNotices,
     ]),
+    HealthModule,
   ],
   providers: [
     NoticeRestService,
