@@ -20,6 +20,13 @@ services:
       db:
         condition: service_healthy
 
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8081/notice-notification/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 80s
+
   db:
     container_name: sandol-notice-notification-db
     image: postgres:15
