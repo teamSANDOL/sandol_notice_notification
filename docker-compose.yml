@@ -10,8 +10,6 @@ services:
     env_file:
       - .env
       - sandol_amqp/.env.amqp
-    ports:
-      - "8081:8081"
     networks:
       - sandol-network
     depends_on:
@@ -21,11 +19,11 @@ services:
         condition: service_healthy
 
     healthcheck:
-      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8081/notice-notification/health" ]
-      interval: 60s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
+      test: [ "CMD", "curl", "-f", "http://localhost:3000/notice-notification/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
 
   db:
     container_name: sandol-notice-notification-db

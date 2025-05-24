@@ -39,7 +39,7 @@ export class DormitoryNoticeService {
         );
       },
     );
-    await this.cronJob();
+    this.cronJob();
   }
 
   // node-cron에 의해 실행되는 작업

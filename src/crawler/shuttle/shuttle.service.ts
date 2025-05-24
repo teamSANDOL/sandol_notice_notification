@@ -38,7 +38,7 @@ export class ShuttleService {
       },
     );
 
-    await this.crawlShuttleSchedule();
+    this.crawlShuttleSchedule();
   }
 
   // node-cron에 의해 실행되는 작업
