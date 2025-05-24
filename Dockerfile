@@ -3,6 +3,7 @@ FROM node:22-alpine
 # puppeteer 의 크롤링을 위한 설정
 # https://github.com/puppeteer/puppeteer/issues/7740#issuecomment-1081225615
 RUN apk add --no-cache \
+  curl \
   msttcorefonts-installer font-noto fontconfig \
   freetype ttf-dejavu ttf-droid ttf-freefont ttf-liberation \
   chromium \
@@ -13,13 +14,6 @@ RUN update-ms-fonts \
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
-
-# 작업 디렉토리 설정
-WORKDIR /app
-
-# 종속성 파일 복사 및 설치
-COPY package.json package-lock.json ./
-RUN npm ci
 
 # 권한 없는 pptruser 유저 추가
 RUN addgroup pptruser \
@@ -34,18 +28,16 @@ RUN mkdir -p /app/dist && \
 
 USER pptruser
 
-# 애플리케이션 코드 복사
+# 작업 디렉토리 설정
+WORKDIR /app
+
+# 종속성 파일 복사 및 설치
+COPY package.json package-lock.json ./
+RUN npm ci
 COPY --chown=pptruser:pptruser . .
 
-# 빌드
 RUN npm run build
 
-# Remove dev dependencies after build
-RUN npm ci --omit=dev
-
-EXPOSE 8081
-ENV PORT 8081
 ENV NODE_ENV production
 
-# 컨테이너 실행 시 기본 명령어 설정
 CMD ["npm", "run", "start:prod"]
