@@ -12,7 +12,7 @@ export class ShuttleService {
   public static readonly PLACES = {
     PRIMARY: "본교 ↔ 정왕역",
     SECOND: "제2캠퍼스 ↔ 본교 ↔ 정왕역",
-  };
+  } as const;
 
   constructor(
     @InjectRepository(ShuttleSchedules)
@@ -46,6 +46,7 @@ export class ShuttleService {
   // 30초마다
   async crawlShuttleSchedule() {
     const newShuttleSchedules = await this.findNewNoticeUsingCrawling();
+
     const notExistShuttleSchedules =
       await this.filterNotExist(newShuttleSchedules);
 
@@ -76,6 +77,11 @@ export class ShuttleService {
         });
 
         const newShuttleSchedules = responses
+          .filter((re) => {
+            if (re.status === "fulfilled") return true;
+            console.log(re.reason);
+            return false;
+          })
           .filter((re) => re.status === "fulfilled")
           .map((v) => v.value);
 
@@ -109,9 +115,10 @@ export class ShuttleService {
       const imageUrl = el.src;
       let place = "";
       if (el.alt === "1페이지") {
-        place = ShuttleService.PLACES.PRIMARY;
+        place = "본교 ↔ 정왕역" as typeof ShuttleService.PLACES.PRIMARY;
       } else if (el.alt === "2페이지") {
-        place = ShuttleService.PLACES.SECOND;
+        place =
+          "제2캠퍼스 ↔ 본교 ↔ 정왕역" as typeof ShuttleService.PLACES.SECOND;
       }
 
       return { imageUrl, place };

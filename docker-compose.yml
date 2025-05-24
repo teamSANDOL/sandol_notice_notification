@@ -9,7 +9,6 @@ services:
     restart: always
     env_file:
       - .env
-      - sandol_amqp/.env.amqp
     networks:
       - sandol-network
     depends_on:
@@ -30,7 +29,7 @@ services:
     image: postgres:15
     restart: always
     env_file:
-      - .env
+      - .env.dev
     ports:
       - "5432:5432"
     volumes:
