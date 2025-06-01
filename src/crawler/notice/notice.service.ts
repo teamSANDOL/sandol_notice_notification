@@ -130,12 +130,20 @@ export class NoticeService {
 
     const { authorName, href, id, title } = data;
 
-    const html = await new Promise<string>((resolve) => {
+    const { html, content } = await new Promise<{
+      html: string;
+      content: string;
+    }>((resolve) => {
       this.crawlerService.startCraw(async (page) => {
         await page.goto(href);
         const html = await page.content();
 
-        resolve(html);
+        // class가 "contents"인 div 부분만 추출
+        const contentDiv = await page.$("div[class='contents']");
+        const content =
+          (await contentDiv?.evaluate((el) => el.innerHTML)) ?? "";
+
+        resolve({ html, content });
       });
     });
 
@@ -151,6 +159,13 @@ export class NoticeService {
         collapseWhitespace: true, // 공백·줄바꿈 제거
         removeComments: true, // 주석 제거
         removeAttributeQuotes: true, // 속성 따옴표 제거
+        minifyCSS: true,
+        minifyJS: true,
+      }),
+      content: await minify(content, {
+        collapseWhitespace: true,
+        removeComments: true,
+        removeAttributeQuotes: true,
         minifyCSS: true,
         minifyJS: true,
       }),

@@ -21,6 +21,9 @@ export class Notices extends TimeStampEntity {
   @Column({ type: "text", nullable: true })
   html: string;
 
+  @Column({ type: "text", nullable: true })
+  content: string;
+
   @ManyToOne(() => NoticeAuthors, { eager: true, nullable: false })
   @JoinColumn({ name: "author_id" })
   author: NoticeAuthors;
@@ -31,6 +34,7 @@ export class Notices extends TimeStampEntity {
       url: this.url,
       title: this.title,
       html: this.html,
+      content: this.content,
       author: this.author.name,
       createAt: this.createdAt,
     };
