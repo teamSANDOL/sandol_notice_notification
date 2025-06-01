@@ -130,12 +130,19 @@ export class DormitoryNoticeService {
       authorName!,
     );
 
-    const html = await new Promise<string>((resolve) => {
+    const { html, content } = await new Promise<{
+      html: string;
+      content: string;
+    }>((resolve) => {
       this.crawlerService.startCraw(async (page) => {
         await page.goto(href);
         const html = await page.content();
 
-        resolve(html);
+        const contentDiv = await page.$("div[class='contents']");
+        const content =
+          (await contentDiv?.evaluate((el) => el.innerHTML)) ?? "";
+
+        resolve({ html, content });
       });
     });
 
@@ -144,6 +151,14 @@ export class DormitoryNoticeService {
       url: href,
       title,
       html: await minify(html, {
+        collapseWhitespace: true, // 공백·줄바꿈 제거
+        removeComments: true, // 주석 제거
+        removeAttributeQuotes: true, // 속성 따옴표 제거
+        minifyCSS: true,
+        minifyJS: true,
+      }),
+
+      content: await minify(content, {
         collapseWhitespace: true, // 공백·줄바꿈 제거
         removeComments: true, // 주석 제거
         removeAttributeQuotes: true, // 속성 따옴표 제거
