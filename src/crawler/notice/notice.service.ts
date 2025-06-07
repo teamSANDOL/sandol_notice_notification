@@ -45,8 +45,8 @@ export class NoticeService {
 
   // node-cron에 의해 실행되는 작업
   // 새로운 공지사항을 크롤링 하고 이벤트 발행
-  // 30초마다
-  @Interval("notice crawler", 1000 * 30)
+  // 5분마다
+  @Interval("notice crawler", 1000 * 60 * 5)
   public async cronJob() {
     const findNewNotices = await this.findNewNoticeUsingCrawling();
     const savedNewNotice = await this.filterNotExist(findNewNotices);

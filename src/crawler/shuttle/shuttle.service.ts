@@ -2,6 +2,7 @@ import { AmqpService, EventTopic } from "@/crawler/amqp/amqp.service";
 import { CrawlerService } from "@/crawler/crawler/crawler.service";
 import { ShuttleSchedules } from "@/db/entity/shuttle-schedules.entity";
 import { Inject, Injectable } from "@nestjs/common";
+import { Interval } from "@nestjs/schedule";
 import { InjectRepository } from "@nestjs/typeorm";
 import _ from "lodash";
 import { ElementHandle } from "puppeteer";
@@ -43,7 +44,8 @@ export class ShuttleService {
 
   // node-cron에 의해 실행되는 작업
   // 새로운 셔틀 시간표를 크롤링 하고 이벤트 발행
-  // 30초마다
+  // 1시간 마다
+  @Interval("shuttle schedule crawler", 1000 * 60 * 60)
   async crawlShuttleSchedule() {
     const newShuttleSchedules = await this.findNewNoticeUsingCrawling();
 
