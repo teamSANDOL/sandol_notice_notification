@@ -6,10 +6,8 @@ import { Inject, Injectable } from "@nestjs/common";
 import { Interval } from "@nestjs/schedule";
 import { InjectRepository } from "@nestjs/typeorm";
 import { minify } from "html-minifier-terser";
-import _ from "lodash";
 import { ElementHandle } from "puppeteer";
 import { In, Repository } from "typeorm";
-import z from "zod";
 
 @Injectable()
 export class DormitoryNoticeService {
@@ -48,9 +46,12 @@ export class DormitoryNoticeService {
   @Interval("dormitory notice crawler", 1000 * 60 * 5)
   public async cronJob() {
     const findNewNotices = await this.findNewNoticeUsingCrawling();
-    const savedNewNotice = await this.filterNotExist(findNewNotices);
 
-    savedNewNotice.forEach(async (notice) => {
+    if (findNewNotices.length === 0) return;
+
+    await this.dormitoryNoticeRepository.save(findNewNotices);
+
+    findNewNotices.forEach(async (notice) => {
       console.log(`새로운 기숙사 공지사항: ${notice.title}`);
       await this.amqpService.publishEvent(
         EventTopic.enum.NoticeDormitory,
@@ -69,31 +70,44 @@ export class DormitoryNoticeService {
           "a:has(span[class*='new'])",
         );
 
+        const elementWithIds = await Promise.all(
+          elements.map(async (el) => ({
+            el,
+            id: await el.evaluate((el) =>
+              Number(
+                el.querySelector<HTMLDivElement>("dl[class='num'] > dd")
+                  ?.innerText,
+              ),
+            ),
+          })),
+        );
+
+        const noticeIds = elementWithIds.map(({ id }) => id);
+
+        const existNotices = await this.dormitoryNoticeRepository.find({
+          where: { id: In(noticeIds) },
+        });
+
+        const existNoticeIds = existNotices.map((notice) => notice.id);
+
+        const newNoticeElements = elementWithIds
+          .filter(({ id }) => !existNoticeIds.includes(id))
+          .map(({ el }) => el);
+
         const responses = await Promise.allSettled(
-          elements.map((el) => this.elementToNotice(el)),
+          newNoticeElements.map((el) => this.elementToNotice(el)),
         );
 
         const newNotices = responses
-          .filter((response) => response.status === "fulfilled")
+          .filter(
+            (response): response is PromiseFulfilledResult<DormitoryNotices> =>
+              response.status === "fulfilled",
+          )
           .map((re) => re.value);
 
         resolve(newNotices.sort((a, b) => a.id - b.id));
       });
     });
-  }
-
-  public async filterNotExist(notices: DormitoryNotices[]) {
-    const existNotices = await this.dormitoryNoticeRepository.find({
-      where: { id: In(_.map(notices, (v) => v.id)) },
-    });
-
-    const notExistNotices = _.differenceWith(notices, existNotices, (n, eN) => {
-      return z.number().parse(n.id) === z.number().parse(eN.id);
-    });
-
-    await this.dormitoryNoticeRepository.save(notExistNotices);
-
-    return notExistNotices;
   }
 
   public async elementToNotice(element: ElementHandle<Element>) {
