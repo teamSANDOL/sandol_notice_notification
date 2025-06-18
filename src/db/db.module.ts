@@ -17,7 +17,7 @@ export const isProduction = process.env.NODE_ENV === "production";
         NODE_ENV.LOCAL === process.env.NODE_ENV
           ? "localhost"
           : process.env.POSTGRES_HOST,
-      // port: 3306,
+      port: Number(process.env.POSTGRES_PORT) || 5432,
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,

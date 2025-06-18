@@ -2,6 +2,12 @@ import { Injectable } from "@nestjs/common";
 import amqplib, { Channel } from "amqplib";
 import z from "zod";
 
+const EVENT_TOPIC = {
+  Notice: "notice",
+  NoticeDormitory: "notice.dormitory",
+  ShuttleSchedule: "shuttlebus",
+} as const;
+
 @Injectable()
 export class AmqpService {
   public static EXCHANGE_NAME = process.env.SCHOOL_NOTIFICATION_EXCHANGE!;
@@ -16,6 +22,29 @@ export class AmqpService {
       eventTopic,
       Buffer.from(content),
     );
+  }
+  async onModuleInit(): Promise<void> {
+    if (EVENT_TOPIC.Notice !== process.env.SCHOOL_NOTIFICATIONS_TOPIC_NOTICE) {
+      throw new Error("SCHOOL_NOTIFICATIONS_TOPIC_NOTICE is not set");
+    }
+    if (
+      EVENT_TOPIC.NoticeDormitory !==
+      process.env.SCHOOL_NOTIFICATIONS_TOPIC_NOTICE_DORMITORY
+    ) {
+      throw new Error("SCHOOL_NOTIFICATIONS_TOPIC_NOTICE_DORMITORY is not set");
+    }
+    if (
+      EVENT_TOPIC.ShuttleSchedule !==
+      process.env.SCHOOL_NOTIFICATIONS_TOPIC_SHUTTLE_SCHEDULE
+    ) {
+      throw new Error("SCHOOL_NOTIFICATIONS_TOPIC_SHUTTLE_SCHEDULE is not set");
+    }
+
+    if (!AmqpService.EXCHANGE_NAME) {
+      throw Error(
+        `SCHOOL_NOTIFICATION_EXCHANGE is not set => ${AmqpService.EXCHANGE_NAME}`,
+      );
+    }
   }
 
   public async subscribeEvent(
@@ -66,31 +95,5 @@ export class AmqpService {
   }
 }
 
-const EVENT_TOPIC = {
-  Notice: "notice",
-  NoticeDormitory: "notice.dormitory",
-  ShuttleSchedule: "shuttlebus",
-} as const;
-
-if (EVENT_TOPIC.Notice !== process.env.SCHOOL_NOTIFICATIONS_TOPIC_NOTICE) {
-  throw new Error("SCHOOL_NOTIFICATIONS_TOPIC_NOTICE is not set");
-}
-if (
-  EVENT_TOPIC.NoticeDormitory !==
-  process.env.SCHOOL_NOTIFICATIONS_TOPIC_NOTICE_DORMITORY
-) {
-  throw new Error("SCHOOL_NOTIFICATIONS_TOPIC_NOTICE_DORMITORY is not set");
-}
-if (
-  EVENT_TOPIC.ShuttleSchedule !==
-  process.env.SCHOOL_NOTIFICATIONS_TOPIC_SHUTTLE_SCHEDULE
-) {
-  throw new Error("SCHOOL_NOTIFICATIONS_TOPIC_SHUTTLE_SCHEDULE is not set");
-}
-
 export const EventTopic = z.nativeEnum(EVENT_TOPIC);
 export type EventTopic = z.infer<typeof EventTopic>;
-
-if (!AmqpService.EXCHANGE_NAME) {
-  throw Error("SCHOOL_NOTIFICATION_EXCHANGE is not set");
-}

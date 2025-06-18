@@ -1,57 +1,27 @@
 import { NODE_ENV } from "@/config/config.module";
 import { Injectable } from "@nestjs/common";
-import genericPool, { Pool } from "generic-pool";
 import PQueue from "p-queue";
-import puppeteer, { executablePath, Page } from "puppeteer";
+import puppeteer, { Browser, executablePath, Page } from "puppeteer";
 
 @Injectable()
 export class CrawlerService {
-  private pagePool: Pool<Page>;
-  private queue = new PQueue({ concurrency: 3 });
-  private isInit: boolean = false;
-
-  private async init() {
-    const browser = await puppeteer.launch({
-      headless: process.env.NODE_ENV !== NODE_ENV.LOCAL,
-      executablePath: executablePath(),
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    });
-    const pagePool = genericPool.createPool(
-      {
-        create: async () => {
-          return await browser.newPage();
-        },
-        destroy: async (page: Page) => {
-          await page.close();
-        },
-      },
-      {
-        max: 10,
-        min: 5,
-      },
-    );
-    this.pagePool = pagePool;
-    this.isInit = true;
-  }
+  private _browser: Browser | null = null;
+  private _browserQueue = new PQueue({ concurrency: 1 });
+  private _pageQueue = new PQueue({ concurrency: 3 });
 
   public async startCraw(fn: (page: Page) => Promise<void>) {
-    if (!this.isInit) {
-      await this.init();
-    }
-
-    this.queue.add(async () => {
-      return new Promise<void>((resolve) => {
-        this.pagePool.use(async (page) => {
-          // page.on("console", (msg) => {
-          //   console.log("PAGE LOG:", msg.text());
-          // });
-          await fn(page);
-          resolve();
-        });
-      });
+    await this._pageQueue.add(async () => {
+      const browser = await this._getBrowser();
+      const page = await browser.newPage();
+      await fn(page);
+      await page.close();
     });
 
-    return;
+    // Queue의 Pending 작업이 끝났을때
+    // 브라우저가 유휴 상태일때 브라우저를 닫음
+    if (await this._isBrowserIdle()) {
+      await this._closeBrowser();
+    }
   }
 
   public async findByCSSSelector(page: Page, selector: string, timeoutSec = 3) {
@@ -69,4 +39,32 @@ export class CrawlerService {
 
     return await page.$$(selector);
   }
+
+  private _getBrowser = async () => {
+    return this._browserQueue.add(async () => {
+      if (!this._browser) {
+        this._browser = await puppeteer.launch({
+          headless: process.env.NODE_ENV !== NODE_ENV.LOCAL,
+          executablePath: executablePath(),
+          // args: ["--no-sandbox", "--disable-setuid-sandbox"],
+          args: [],
+        });
+      }
+
+      return this._browser;
+    });
+  };
+
+  private _closeBrowser = async () => {
+    const browser = await this._getBrowser();
+    await browser.close();
+    this._browser = null;
+  };
+
+  private _isBrowserIdle = async () => {
+    const browser = await this._getBrowser();
+    const pageLength = (await browser.pages()).length;
+    const pageQueue = this._pageQueue;
+    return pageLength === 1 && pageQueue.size === 0 && pageQueue.pending === 0;
+  };
 }
