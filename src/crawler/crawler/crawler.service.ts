@@ -46,8 +46,24 @@ export class CrawlerService {
         this._browser = await puppeteer.launch({
           headless: process.env.NODE_ENV !== NODE_ENV.LOCAL,
           executablePath: executablePath(),
-          // args: ["--no-sandbox", "--disable-setuid-sandbox"],
-          args: [],
+          args: [
+            "--no-sandbox",
+            "--disable-setuid-sandbox",
+            "--disable-dev-shm-usage",
+            "--disable-gpu",
+            "--disable-extensions",
+            "--disable-background-timer-throttling",
+            "--disable-backgrounding-occluded-windows",
+            "--disable-renderer-backgrounding",
+            "--disable-features=TranslateUI",
+            "--disable-default-apps",
+            "--memory-pressure-off",
+            "--max_old_space_size=512",
+            "--disable-background-networking",
+            "--disable-background-downloads",
+            "--disable-preconnect",
+            "--disable-prefetch",
+          ],
         });
       }
 
