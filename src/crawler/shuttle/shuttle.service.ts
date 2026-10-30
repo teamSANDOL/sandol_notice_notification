@@ -62,34 +62,33 @@ export class ShuttleService {
   }
 
   async findNewNoticeUsingCrawling() {
-    return new Promise<ShuttleSchedules[]>((resolve) => {
-      this.crawlerService.startCraw(async (page) => {
-        await page.goto(`https://ibook.kpu.ac.kr/Viewer/bus01`);
+    const result = await this.crawlerService.startCraw(async (page) => {
+      await page.goto(`https://ibook.kpu.ac.kr/Viewer/bus01`);
 
-        const imageElements = await this.crawlerService.findByCSSSelector(
-          page,
-          "img[class*='pageImage']",
-        );
+      const imageElements = await this.crawlerService.findByCSSSelector(
+        page,
+        "img[class*='pageImage']",
+      );
 
-        const responses = await Promise.allSettled(
-          imageElements.map((el) => this.elementToShuttleSchedule(el)),
-        ).catch((err) => {
-          console.log(err);
-          return [] as PromiseSettledResult<ShuttleSchedules>[];
-        });
-
-        const newShuttleSchedules = responses
-          .filter((re) => {
-            if (re.status === "fulfilled") return true;
-            console.log(re.reason);
-            return false;
-          })
-          .filter((re) => re.status === "fulfilled")
-          .map((v) => v.value);
-
-        resolve(newShuttleSchedules);
+      const responses = await Promise.allSettled(
+        imageElements.map((el) => this.elementToShuttleSchedule(el)),
+      ).catch((err) => {
+        console.log(err);
+        return [] as PromiseSettledResult<ShuttleSchedules>[];
       });
+
+      const newShuttleSchedules = responses
+        .filter((re) => {
+          if (re.status === "fulfilled") return true;
+          console.log(re.reason);
+          return false;
+        })
+        .filter((re) => re.status === "fulfilled")
+        .map((v) => v.value);
+
+      return newShuttleSchedules;
     });
+    return result ?? [];
   }
 
   async filterNotExist(shuttleSchedules: ShuttleSchedules[]) {
