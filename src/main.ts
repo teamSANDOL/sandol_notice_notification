@@ -32,4 +32,9 @@ async function bootstrap() {
 
   await app.listen(process.env.APP_PORT ?? 3000);
 }
+// 안전망: 놓친 rejection 하나로 컨테이너가 재시작 루프에 빠지지 않도록 로그만 남기고 종료하지 않는다.
+process.on("unhandledRejection", (reason) => {
+  console.error("unhandledRejection:", reason);
+});
+
 bootstrap();

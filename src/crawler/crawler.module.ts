@@ -28,5 +28,6 @@ import { ShuttleService } from "./shuttle/shuttle.service";
     DormitoryNoticeService,
     ShuttleService,
   ],
+  exports: [AmqpService],
 })
 export class CrawlerModule {}

@@ -45,69 +45,72 @@ export class DormitoryNoticeService {
   // 5분마다
   @Interval("dormitory notice crawler", 1000 * 60 * 5)
   public async cronJob() {
-    const findNewNotices = await this.findNewNoticeUsingCrawling();
+    try {
+      const findNewNotices = await this.findNewNoticeUsingCrawling();
 
-    if (findNewNotices.length === 0) return;
+      if (findNewNotices.length === 0) return;
 
-    await this.dormitoryNoticeRepository.save(findNewNotices);
+      await this.dormitoryNoticeRepository.save(findNewNotices);
 
-    findNewNotices.forEach(async (notice) => {
-      console.log(`새로운 기숙사 공지사항: ${notice.title}`);
-      await this.amqpService.publishEvent(
-        EventTopic.enum.NoticeDormitory,
-        JSON.stringify(notice.toJSON()),
-      );
-    });
+      for (const notice of findNewNotices) {
+        console.log(`새로운 기숙사 공지사항: ${notice.title}`);
+        await this.amqpService.publishEvent(
+          EventTopic.enum.NoticeDormitory,
+          JSON.stringify(notice.toJSON()),
+        );
+      }
+    } catch (err) {
+      console.warn("기숙사 공지사항 크롤 작업 실패:", err);
+    }
   }
 
   public async findNewNoticeUsingCrawling() {
-    return new Promise<DormitoryNotices[]>((resolve) => {
-      this.crawlerService.startCraw(async (page) => {
-        await page.goto("https://dorm.tukorea.ac.kr/dorm/2630/subview.do");
+    const result = await this.crawlerService.startCraw(async (page) => {
+      await page.goto("https://dorm.tukorea.ac.kr/dorm/2630/subview.do");
 
-        const elements = await this.crawlerService.findByCSSSelector(
-          page,
-          "a:has(span[class*='new'])",
-        );
+      const elements = await this.crawlerService.findByCSSSelector(
+        page,
+        "a:has(span[class*='new'])",
+      );
 
-        const elementWithIds = await Promise.all(
-          elements.map(async (el) => ({
-            el,
-            id: await el.evaluate((el) =>
-              Number(
-                el.querySelector<HTMLDivElement>("dl[class='num'] > dd")
-                  ?.innerText,
-              ),
+      const elementWithIds = await Promise.all(
+        elements.map(async (el) => ({
+          el,
+          id: await el.evaluate((el) =>
+            Number(
+              el.querySelector<HTMLDivElement>("dl[class='num'] > dd")
+                ?.innerText,
             ),
-          })),
-        );
+          ),
+        })),
+      );
 
-        const noticeIds = elementWithIds.map(({ id }) => id);
+      const noticeIds = elementWithIds.map(({ id }) => id);
 
-        const existNotices = await this.dormitoryNoticeRepository.find({
-          where: { id: In(noticeIds) },
-        });
-
-        const existNoticeIds = existNotices.map((notice) => notice.id);
-
-        const newNoticeElements = elementWithIds
-          .filter(({ id }) => !existNoticeIds.includes(id))
-          .map(({ el }) => el);
-
-        const responses = await Promise.allSettled(
-          newNoticeElements.map((el) => this.elementToNotice(el)),
-        );
-
-        const newNotices = responses
-          .filter(
-            (response): response is PromiseFulfilledResult<DormitoryNotices> =>
-              response.status === "fulfilled",
-          )
-          .map((re) => re.value);
-
-        resolve(newNotices.sort((a, b) => a.id - b.id));
+      const existNotices = await this.dormitoryNoticeRepository.find({
+        where: { id: In(noticeIds) },
       });
+
+      const existNoticeIds = existNotices.map((notice) => notice.id);
+
+      const newNoticeElements = elementWithIds
+        .filter(({ id }) => !existNoticeIds.includes(id))
+        .map(({ el }) => el);
+
+      const responses = await Promise.allSettled(
+        newNoticeElements.map((el) => this.elementToNotice(el)),
+      );
+
+      const newNotices = responses
+        .filter(
+          (response): response is PromiseFulfilledResult<DormitoryNotices> =>
+            response.status === "fulfilled",
+        )
+        .map((re) => re.value);
+
+      return newNotices.sort((a, b) => a.id - b.id);
     });
+    return result ?? [];
   }
 
   public async elementToNotice(element: ElementHandle<Element>) {
@@ -144,21 +147,17 @@ export class DormitoryNoticeService {
       authorName!,
     );
 
-    const { html, content } = await new Promise<{
-      html: string;
-      content: string;
-    }>((resolve) => {
-      this.crawlerService.startCraw(async (page) => {
-        await page.goto(href);
-        const html = await page.content();
+    const crawled = await this.crawlerService.startCraw(async (page) => {
+      await page.goto(href);
+      const html = await page.content();
 
-        const contentDiv = await page.$("div[class='contents']");
-        const content =
-          (await contentDiv?.evaluate((el) => el.innerHTML)) ?? "";
+      const contentDiv = await page.$("div[class='contents']");
+      const content = (await contentDiv?.evaluate((el) => el.innerHTML)) ?? "";
 
-        resolve({ html, content });
-      });
+      return { html, content };
     });
+    if (!crawled) throw new Error(`공지사항 본문 크롤링 실패 ${href}`);
+    const { html, content } = crawled;
 
     const newNotice = this.dormitoryNoticeRepository.create({
       id,

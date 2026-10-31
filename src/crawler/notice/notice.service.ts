@@ -46,69 +46,72 @@ export class NoticeService {
   // 5분마다
   @Interval("notice crawler", 1000 * 60 * 5)
   public async cronJob() {
-    const findNewNotices = await this.findNewNoticeUsingCrawling();
+    try {
+      const findNewNotices = await this.findNewNoticeUsingCrawling();
 
-    if (findNewNotices.length === 0) return;
+      if (findNewNotices.length === 0) return;
 
-    await this.noticeRepository.save(findNewNotices);
+      await this.noticeRepository.save(findNewNotices);
 
-    findNewNotices.forEach((notice) => {
-      console.log(`새로운 공지사항: ${notice.title}`);
-      this.amqpService.publishEvent(
-        EventTopic.enum.Notice,
-        JSON.stringify(notice.toJSON()),
-      );
-    });
+      for (const notice of findNewNotices) {
+        console.log(`새로운 공지사항: ${notice.title}`);
+        await this.amqpService.publishEvent(
+          EventTopic.enum.Notice,
+          JSON.stringify(notice.toJSON()),
+        );
+      }
+    } catch (err) {
+      console.warn("공지사항 크롤 작업 실패:", err);
+    }
   }
 
   public async findNewNoticeUsingCrawling() {
-    return new Promise<Notices[]>((resolve) => {
-      this.crawlerService.startCraw(async (page) => {
-        await page.goto(`${SCHOOL_DOMAIN}/tukorea/7607/subview.do`);
+    const result = await this.crawlerService.startCraw(async (page) => {
+      await page.goto(`${SCHOOL_DOMAIN}/tukorea/7607/subview.do`);
 
-        const elements = await this.crawlerService.findByCSSSelector(
-          page,
-          "a:has(span[class*='new'])",
-        );
+      const elements = await this.crawlerService.findByCSSSelector(
+        page,
+        "a:has(span[class*='new'])",
+      );
 
-        const elementWithIds = await Promise.all(
-          elements.map(async (el) => ({
-            el,
-            id: await el.evaluate((el) =>
-              Number(
-                el.querySelector<HTMLDivElement>("dl[class='num'] > dd")
-                  ?.innerText,
-              ),
+      const elementWithIds = await Promise.all(
+        elements.map(async (el) => ({
+          el,
+          id: await el.evaluate((el) =>
+            Number(
+              el.querySelector<HTMLDivElement>("dl[class='num'] > dd")
+                ?.innerText,
             ),
-          })),
-        );
+          ),
+        })),
+      );
 
-        const noticeIds = elementWithIds.map(({ id }) => id);
-        const existNotices = await this.noticeRepository.find({
-          where: { id: In(noticeIds) },
-        });
-        const existNoticeIds = existNotices.map((notice) => notice.id);
-
-        const newNoticeElements = elementWithIds
-          .filter(({ id }) => !existNoticeIds.includes(id))
-          .map(({ el }) => el);
-
-        const responses = await Promise.allSettled(
-          newNoticeElements.map((el) => this.elementToNotice(el)),
-        );
-
-        const newNotices = responses.map((re) => {
-          if (re.status === "fulfilled") {
-            return re.value;
-          } else {
-            console.log("element can't convert notice");
-            throw new Error(re.reason as string);
-          }
-        });
-
-        resolve(newNotices.sort((a, b) => a.id - b.id));
+      const noticeIds = elementWithIds.map(({ id }) => id);
+      const existNotices = await this.noticeRepository.find({
+        where: { id: In(noticeIds) },
       });
+      const existNoticeIds = existNotices.map((notice) => notice.id);
+
+      const newNoticeElements = elementWithIds
+        .filter(({ id }) => !existNoticeIds.includes(id))
+        .map(({ el }) => el);
+
+      const responses = await Promise.allSettled(
+        newNoticeElements.map((el) => this.elementToNotice(el)),
+      );
+
+      const newNotices = responses.map((re) => {
+        if (re.status === "fulfilled") {
+          return re.value;
+        } else {
+          console.log("element can't convert notice");
+          throw new Error(re.reason as string);
+        }
+      });
+
+      return newNotices.sort((a, b) => a.id - b.id);
     });
+    return result ?? [];
   }
 
   public async elementToNotice(element: ElementHandle<Element>) {
@@ -138,22 +141,18 @@ export class NoticeService {
 
     const { authorName, href, id, title } = data;
 
-    const { html, content } = await new Promise<{
-      html: string;
-      content: string;
-    }>((resolve) => {
-      this.crawlerService.startCraw(async (page) => {
-        await page.goto(href);
-        const html = await page.content();
+    const crawled = await this.crawlerService.startCraw(async (page) => {
+      await page.goto(href);
+      const html = await page.content();
 
-        // class가 "contents"인 div 부분만 추출
-        const contentDiv = await page.$("div[class='contents']");
-        const content =
-          (await contentDiv?.evaluate((el) => el.innerHTML)) ?? "";
+      // class가 "contents"인 div 부분만 추출
+      const contentDiv = await page.$("div[class='contents']");
+      const content = (await contentDiv?.evaluate((el) => el.innerHTML)) ?? "";
 
-        resolve({ html, content });
-      });
+      return { html, content };
     });
+    if (!crawled) throw new Error(`공지사항 본문 크롤링 실패 ${href}`);
+    const { html, content } = crawled;
 
     const author = await this.noticeAuthorService.upsertNoticeAuthorByName(
       authorName!,
