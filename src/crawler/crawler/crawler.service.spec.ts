@@ -40,7 +40,11 @@ describe("CrawlerService", () => {
     expect(result).toBeNull();
     expect(page.close).toHaveBeenCalled();
     expect(browser.close).toHaveBeenCalledTimes(1);
-    const { userDataDir } = launch.mock.calls[0][0] as { userDataDir: string };
+    const { userDataDir, env } = launch.mock.calls[0][0] as {
+      userDataDir: string;
+      env: Record<string, string>;
+    };
+    expect(env.TMPDIR).toBe(userDataDir);
     await expect(access(userDataDir)).rejects.toThrow();
   });
 });

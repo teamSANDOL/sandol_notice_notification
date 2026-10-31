@@ -61,6 +61,8 @@ export class CrawlerService {
         try {
           this._browser = await puppeteer.launch({
             userDataDir: this._userDataDir,
+            // chromium 임시 파일(org.chromium.*)도 프로필 폴더 안에 만들어 함께 삭제한다.
+            env: { ...process.env, TMPDIR: this._userDataDir },
             headless: process.env.NODE_ENV !== NODE_ENV.LOCAL,
             executablePath: executablePath(),
             args: [

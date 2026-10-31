@@ -47,8 +47,40 @@ export class AmqpService {
     }
   }
 
+  // AMQP가 내려가 있어도 부팅(Nest 초기화)을 막거나 죽이지 않도록
+  // 백그라운드에서 지수 백오프(1s~30s)로 재시도한다. 호출자는 기다리지 않는다.
   public async subscribeEvent(
     queueName = "",
+    eventTopic: EventTopic,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+    callback: Function,
+  ): Promise<void> {
+    void this.subscribeWithRetry(queueName, eventTopic, callback);
+  }
+
+  private async subscribeWithRetry(
+    queueName: string,
+    eventTopic: EventTopic,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+    callback: Function,
+  ): Promise<void> {
+    for (let delay = 1000; ; delay = Math.min(delay * 2, 30_000)) {
+      try {
+        await this.subscribe(queueName, eventTopic, callback);
+        return;
+      } catch (err) {
+        console.warn(
+          `AMQP 구독 실패(${queueName}), ${delay}ms 후 재시도:`,
+          err,
+        );
+        this.ch = undefined;
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+    }
+  }
+
+  private async subscribe(
+    queueName: string,
     eventTopic: EventTopic,
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     callback: Function,
