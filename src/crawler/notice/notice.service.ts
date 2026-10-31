@@ -46,19 +46,23 @@ export class NoticeService {
   // 5분마다
   @Interval("notice crawler", 1000 * 60 * 5)
   public async cronJob() {
-    const findNewNotices = await this.findNewNoticeUsingCrawling();
+    try {
+      const findNewNotices = await this.findNewNoticeUsingCrawling();
 
-    if (findNewNotices.length === 0) return;
+      if (findNewNotices.length === 0) return;
 
-    await this.noticeRepository.save(findNewNotices);
+      await this.noticeRepository.save(findNewNotices);
 
-    findNewNotices.forEach((notice) => {
-      console.log(`새로운 공지사항: ${notice.title}`);
-      this.amqpService.publishEvent(
-        EventTopic.enum.Notice,
-        JSON.stringify(notice.toJSON()),
-      );
-    });
+      for (const notice of findNewNotices) {
+        console.log(`새로운 공지사항: ${notice.title}`);
+        await this.amqpService.publishEvent(
+          EventTopic.enum.Notice,
+          JSON.stringify(notice.toJSON()),
+        );
+      }
+    } catch (err) {
+      console.warn("공지사항 크롤 작업 실패:", err);
+    }
   }
 
   public async findNewNoticeUsingCrawling() {

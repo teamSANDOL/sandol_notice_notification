@@ -75,7 +75,11 @@ export class AmqpService {
       if (!content) {
         console.log("Consumer cancelled by server");
       } else {
-        await callback(content);
+        try {
+          await callback(content);
+        } catch (err) {
+          console.warn("AMQP 메시지 처리 실패:", err);
+        }
       }
     });
   }

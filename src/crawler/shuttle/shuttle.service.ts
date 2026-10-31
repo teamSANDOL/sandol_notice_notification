@@ -47,18 +47,22 @@ export class ShuttleService {
   // 1시간 마다
   @Interval("shuttle schedule crawler", 1000 * 60 * 60)
   async crawlShuttleSchedule() {
-    const newShuttleSchedules = await this.findNewNoticeUsingCrawling();
+    try {
+      const newShuttleSchedules = await this.findNewNoticeUsingCrawling();
 
-    const notExistShuttleSchedules =
-      await this.filterNotExist(newShuttleSchedules);
+      const notExistShuttleSchedules =
+        await this.filterNotExist(newShuttleSchedules);
 
-    notExistShuttleSchedules.forEach((shuttleSchedule) => {
-      console.log("새로운 셔틀버스 시간표", shuttleSchedule.place);
-      this.amqpService.publishEvent(
-        EventTopic.enum.ShuttleSchedule,
-        JSON.stringify(shuttleSchedule),
-      );
-    });
+      for (const shuttleSchedule of notExistShuttleSchedules) {
+        console.log("새로운 셔틀버스 시간표", shuttleSchedule.place);
+        await this.amqpService.publishEvent(
+          EventTopic.enum.ShuttleSchedule,
+          JSON.stringify(shuttleSchedule),
+        );
+      }
+    } catch (err) {
+      console.warn("셔틀버스 시간표 크롤 작업 실패:", err);
+    }
   }
 
   async findNewNoticeUsingCrawling() {

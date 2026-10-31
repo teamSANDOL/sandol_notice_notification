@@ -45,19 +45,23 @@ export class DormitoryNoticeService {
   // 5분마다
   @Interval("dormitory notice crawler", 1000 * 60 * 5)
   public async cronJob() {
-    const findNewNotices = await this.findNewNoticeUsingCrawling();
+    try {
+      const findNewNotices = await this.findNewNoticeUsingCrawling();
 
-    if (findNewNotices.length === 0) return;
+      if (findNewNotices.length === 0) return;
 
-    await this.dormitoryNoticeRepository.save(findNewNotices);
+      await this.dormitoryNoticeRepository.save(findNewNotices);
 
-    findNewNotices.forEach(async (notice) => {
-      console.log(`새로운 기숙사 공지사항: ${notice.title}`);
-      await this.amqpService.publishEvent(
-        EventTopic.enum.NoticeDormitory,
-        JSON.stringify(notice.toJSON()),
-      );
-    });
+      for (const notice of findNewNotices) {
+        console.log(`새로운 기숙사 공지사항: ${notice.title}`);
+        await this.amqpService.publishEvent(
+          EventTopic.enum.NoticeDormitory,
+          JSON.stringify(notice.toJSON()),
+        );
+      }
+    } catch (err) {
+      console.warn("기숙사 공지사항 크롤 작업 실패:", err);
+    }
   }
 
   public async findNewNoticeUsingCrawling() {
